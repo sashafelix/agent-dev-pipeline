@@ -1,0 +1,28 @@
+# Agent worktrees — each story gets an isolated git worktree under .agent-runs/{story_id}.
+# Worktrees live on branch story/{story_id} and should never be committed into main.
+.agent-runs/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Build outputs (common Java/Maven; harmless if not applicable)
+target/
+build/
+out/
+*.class
+
+# Log files from local agent runs
+*.log
+
+# Uploaded project-specific documents (keep local, do not share)
+docs/Uploaded-docs/
+*.docx
+*.pdf
+
+# Claude Code local settings (per-user permissions, not shared)
+.claude/settings.local.json
+
+/.idea/
