@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-dev-pipeline.local/schemas/workflow-profiles.schema.json",
+  "title": "Workflow Profiles",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "contract_version", "mandatory_stage_order", "profiles"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0"},
+    "contract_version": {"type": "string", "minLength": 1},
+    "mandatory_stage_order": {"type": "array", "minItems": 9, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "profiles": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "rank", "description", "required_stages", "specialist_roles", "conditional_specialists", "manual_checkpoints", "budgets", "evidence_requirements"],
+        "properties": {
+          "id": {"type": "string", "enum": ["small", "standard", "high-risk"]},
+          "rank": {"type": "integer", "minimum": 1, "maximum": 3},
+          "description": {"type": "string", "minLength": 8},
+          "required_stages": {"type": "array", "minItems": 9, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "specialist_roles": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "conditional_specialists": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}},
+          "manual_checkpoints": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "budgets": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["max_context_files", "max_context_bytes", "max_tokens", "max_convergence_attempts"],
+            "properties": {
+              "max_context_files": {"type": "integer", "minimum": 1},
+              "max_context_bytes": {"type": "integer", "minimum": 1},
+              "max_tokens": {"type": "integer", "minimum": 1},
+              "max_convergence_attempts": {"type": "integer", "minimum": 1, "maximum": 2}
+            }
+          },
+          "evidence_requirements": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+        }
+      }
+    }
+  }
+}
