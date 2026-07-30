@@ -90,11 +90,24 @@ def validate(run_dir: Path) -> list[str]:
     if not resolution.get("overridden") and resolution.get("override_reason") is not None:
         errors.append("profile-resolution.json: non-overridden resolution cannot have override_reason")
 
+    specialist_schema = load_json(SCHEMA_DIR / "specialist-review.schema.json")
     for specialist in sorted(actual_specialists & role_ids):
         outputs = roles[specialist].get("canonical_outputs", [])
         for output in outputs:
-            if output.startswith("specialist-") and not (run_dir / output).is_file():
+            if not output.startswith("specialist-"):
+                continue
+            path = run_dir / output
+            if not path.is_file():
                 errors.append(f"missing required specialist artifact for {specialist}: {output}")
+                continue
+            review = load_json(path)
+            errors.extend(f"{path}: {error}" for error in validate_instance(review, specialist_schema))
+            if review.get("role") != specialist:
+                errors.append(f"{path}: role must be {specialist}")
+            if review.get("status") == "FAIL":
+                errors.append(f"{path}: specialist FAIL blocks run closure")
+            if any(item.get("severity") == "blocking" for item in review.get("findings", []) if isinstance(item, dict)):
+                errors.append(f"{path}: blocking specialist finding prevents closure")
 
     budget = profile["budgets"]
     context_schema = load_json(SCHEMA_DIR / "context-manifest.schema.json")
