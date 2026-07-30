@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-dev-pipeline.local/schemas/context-manifest.schema.json",
+  "title": "Stage Context Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "story_id", "attempt", "stage", "required_sources", "optional_sources", "exclusions", "budget"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0"},
+    "story_id": {"type": "string", "minLength": 1},
+    "attempt": {"type": "integer", "minimum": 1},
+    "stage": {"type": "string", "enum": ["prepare", "brainstorm", "plan", "analyze", "red_test", "green_code", "refactor", "quality_gate", "converge"]},
+    "required_sources": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["path", "kind", "reason"], "properties": {"path": {"type": "string", "minLength": 1}, "kind": {"type": "string", "enum": ["task", "artifact", "source", "convention", "learning", "diff", "test_output"]}, "reason": {"type": "string", "minLength": 1}, "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}}}},
+    "optional_sources": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["path", "kind", "reason"], "properties": {"path": {"type": "string", "minLength": 1}, "kind": {"type": "string", "enum": ["artifact", "source", "convention", "learning", "diff", "test_output"]}, "reason": {"type": "string", "minLength": 1}, "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}}}},
+    "exclusions": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["pattern", "reason"], "properties": {"pattern": {"type": "string", "minLength": 1}, "reason": {"type": "string", "minLength": 1}}}},
+    "budget": {"type": "object", "additionalProperties": false, "required": ["max_files", "max_bytes", "max_tokens"], "properties": {"max_files": {"type": "integer", "minimum": 1}, "max_bytes": {"type": "integer", "minimum": 1}, "max_tokens": {"type": ["integer", "null"], "minimum": 1}}}
+  }
+}

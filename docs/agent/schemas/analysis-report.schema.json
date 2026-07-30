@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-dev-pipeline.local/schemas/analysis-report.schema.json",
+  "title": "Analysis Report Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "story_id", "hard_findings", "warnings", "unresolved_uncertainties", "artifact_refs"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0"},
+    "story_id": {"type": "string", "minLength": 1},
+    "hard_findings": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "category", "message", "artifact_refs"], "properties": {"id": {"type": "string", "minLength": 1}, "category": {"type": "string", "enum": ["contradiction", "missing_coverage", "scope", "assumption", "architecture", "testability"]}, "message": {"type": "string", "minLength": 1}, "artifact_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}}}},
+    "warnings": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "category", "message", "artifact_refs"], "properties": {"id": {"type": "string", "minLength": 1}, "category": {"type": "string", "minLength": 1}, "message": {"type": "string", "minLength": 1}, "artifact_refs": {"type": "array", "items": {"type": "string", "minLength": 1}}}}},
+    "unresolved_uncertainties": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "artifact_refs": {"type": "array", "minItems": 3, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  }
+}
