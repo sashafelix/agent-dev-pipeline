@@ -21,7 +21,10 @@ jobs:
           python -m py_compile \
             scripts/schema_validation.py \
             scripts/validate-run-bundle.py \
-            scripts/evaluate-corpus.py
+            scripts/evaluate-corpus.py \
+            scripts/resolve-profile.py \
+            scripts/validate-governance.py \
+            scripts/validate-run-governance.py
       - name: Parse all published schemas
         run: |
           python - <<'PY'
@@ -35,9 +38,25 @@ jobs:
               assert schema.get('$id'), f'{path}: missing $id'
               print(f'parsed {path}')
           PY
+      - name: Validate governance contracts
+        run: python scripts/validate-governance.py
       - name: Validate canonical evaluation corpus
         run: python scripts/evaluate-corpus.py
-      - name: Exercise schema validator failure paths
+      - name: Exercise deterministic profile resolution
+        run: |
+          cat > /tmp/small.json <<'JSON'
+          {"story_id":"CI-SMALL","facts":{"risk_tags":[],"blast_radius":"low","uncertainty":"low","changed_module_count":1,"cross_service":false,"contract_change":false,"data_migration":false,"security_sensitive":false,"infrastructure_change":false}}
+          JSON
+          python scripts/resolve-profile.py /tmp/small.json --output /tmp/small-resolution.json
+          grep -q '"selected_profile": "small"' /tmp/small-resolution.json
+
+          cat > /tmp/high.json <<'JSON'
+          {"story_id":"CI-HIGH","facts":{"risk_tags":["domain:auth"],"blast_radius":"medium","uncertainty":"low","changed_module_count":2,"cross_service":false,"contract_change":false,"data_migration":false,"security_sensitive":true,"infrastructure_change":false}}
+          JSON
+          python scripts/resolve-profile.py /tmp/high.json --output /tmp/high-resolution.json
+          grep -q '"selected_profile": "high-risk"' /tmp/high-resolution.json
+          grep -q '"threat_modeler"' /tmp/high-resolution.json
+      - name: Exercise schema validator reference and failure paths
         run: |
           python - <<'PY'
           import sys
@@ -46,11 +65,12 @@ jobs:
           schema = {
               'type': 'object',
               'additionalProperties': False,
-              'required': ['name'],
-              'properties': {'name': {'type': 'string', 'minLength': 2}}
+              'required': ['item'],
+              'properties': {'item': {'$ref': '#/$defs/name'}},
+              '$defs': {'name': {'type': 'string', 'minLength': 2}}
           }
-          assert validate_instance({'name': 'ok'}, schema) == []
-          assert validate_instance({'name': 'x'}, schema)
-          assert validate_instance({'name': 'ok', 'extra': True}, schema)
-          print('schema validator positive and negative paths passed')
+          assert validate_instance({'item': 'ok'}, schema) == []
+          assert validate_instance({'item': 'x'}, schema)
+          assert validate_instance({'item': 'ok', 'extra': True}, schema)
+          print('schema validator reference, positive and negative paths passed')
           PY
