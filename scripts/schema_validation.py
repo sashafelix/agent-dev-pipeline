@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Small JSON Schema subset used by the local RGR contract validators.
+"""Dependency-free JSON Schema subset for local RGR contract validation.
 
-Supported keywords: type, required, properties, additionalProperties, items,
-enum, const, minItems, maxItems, uniqueItems, minLength, minimum, maximum,
-and pattern. The subset is intentionally explicit and dependency-free.
+Supported keywords: local $ref, type, required, properties,
+additionalProperties, items, enum, const, minItems, maxItems, uniqueItems,
+minLength, minimum, maximum, pattern and date-time format.
 """
 from __future__ import annotations
 
 import json
 import re
+from datetime import datetime
 from typing import Any
 
 
@@ -24,10 +25,48 @@ def _matches_type(value: Any, expected: str) -> bool:
     }.get(expected, False)
 
 
-def validate_instance(instance: Any, schema: dict[str, Any], path: str = "$") -> list[str]:
-    """Return human-readable validation errors for one instance."""
-    errors: list[str] = []
+def _resolve_local_ref(root_schema: dict[str, Any], reference: str) -> dict[str, Any]:
+    if not reference.startswith("#/"):
+        raise ValueError(f"unsupported non-local $ref: {reference}")
+    current: Any = root_schema
+    for raw_part in reference[2:].split("/"):
+        part = raw_part.replace("~1", "/").replace("~0", "~")
+        if not isinstance(current, dict) or part not in current:
+            raise ValueError(f"unresolved $ref: {reference}")
+        current = current[part]
+    if not isinstance(current, dict):
+        raise ValueError(f"$ref does not resolve to an object schema: {reference}")
+    return current
 
+
+def _valid_datetime(value: str) -> bool:
+    candidate = value[:-1] + "+00:00" if value.endswith("Z") else value
+    try:
+        datetime.fromisoformat(candidate)
+    except ValueError:
+        return False
+    return "T" in value
+
+
+def validate_instance(
+    instance: Any,
+    schema: dict[str, Any],
+    path: str = "$",
+    root_schema: dict[str, Any] | None = None,
+) -> list[str]:
+    """Return human-readable validation errors for one instance."""
+    root = schema if root_schema is None else root_schema
+    if "$ref" in schema:
+        reference = schema["$ref"]
+        if not isinstance(reference, str):
+            return [f"{path}: $ref must be a string"]
+        try:
+            resolved = _resolve_local_ref(root, reference)
+        except ValueError as exc:
+            return [f"{path}: {exc}"]
+        return validate_instance(instance, resolved, path, root)
+
+    errors: list[str] = []
     expected = schema.get("type")
     if expected is not None:
         expected_types = [expected] if isinstance(expected, str) else expected
@@ -52,17 +91,16 @@ def validate_instance(instance: Any, schema: dict[str, Any], path: str = "$") ->
             errors.append(f"{path}: schema properties must be an object")
             properties = {}
         for key, child_schema in properties.items():
-            if key in instance:
-                errors.extend(validate_instance(instance[key], child_schema, f"{path}.{key}"))
+            if key in instance and isinstance(child_schema, dict):
+                errors.extend(validate_instance(instance[key], child_schema, f"{path}.{key}", root))
 
         additional = schema.get("additionalProperties", True)
         if additional is False:
-            unknown = sorted(set(instance) - set(properties))
-            for key in unknown:
+            for key in sorted(set(instance) - set(properties)):
                 errors.append(f"{path}: unexpected property {key!r}")
         elif isinstance(additional, dict):
             for key in sorted(set(instance) - set(properties)):
-                errors.extend(validate_instance(instance[key], additional, f"{path}.{key}"))
+                errors.extend(validate_instance(instance[key], additional, f"{path}.{key}", root))
 
     if isinstance(instance, list):
         min_items = schema.get("minItems")
@@ -78,7 +116,7 @@ def validate_instance(instance: Any, schema: dict[str, Any], path: str = "$") ->
         item_schema = schema.get("items")
         if isinstance(item_schema, dict):
             for index, item in enumerate(instance):
-                errors.extend(validate_instance(item, item_schema, f"{path}[{index}]"))
+                errors.extend(validate_instance(item, item_schema, f"{path}[{index}]", root))
 
     if isinstance(instance, str):
         min_length = schema.get("minLength")
@@ -87,6 +125,8 @@ def validate_instance(instance: Any, schema: dict[str, Any], path: str = "$") ->
         pattern = schema.get("pattern")
         if isinstance(pattern, str) and re.search(pattern, instance) is None:
             errors.append(f"{path}: does not match pattern {pattern!r}")
+        if schema.get("format") == "date-time" and not _valid_datetime(instance):
+            errors.append(f"{path}: must be an ISO-8601 date-time")
 
     if isinstance(instance, (int, float)) and not isinstance(instance, bool):
         minimum = schema.get("minimum")
