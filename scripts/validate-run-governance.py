@@ -41,6 +41,21 @@ def expected_specialists(profile: dict[str, Any], facts: dict[str, Any]) -> set[
     return roles
 
 
+def read_events(path: Path) -> list[dict[str, Any]]:
+    events: list[dict[str, Any]] = []
+    for line_no, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if not raw.strip():
+            continue
+        try:
+            event = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"{path}:{line_no}: invalid JSON: {exc}") from exc
+        if not isinstance(event, dict):
+            raise ValueError(f"{path}:{line_no}: event must be an object")
+        events.append(event)
+    return events
+
+
 def validate(run_dir: Path) -> list[str]:
     errors: list[str] = []
     resolution_path = run_dir / "profile-resolution.json"
@@ -53,7 +68,8 @@ def validate(run_dir: Path) -> list[str]:
     profiles_doc = load_json(AGENT_DIR / "workflow-profiles.json")
     profiles = {profile["id"]: profile for profile in profiles_doc["profiles"]}
     roles_doc = load_json(AGENT_DIR / "role-contracts.json")
-    role_ids = {role["id"] for role in roles_doc["roles"]}
+    roles = {role["id"]: role for role in roles_doc["roles"]}
+    role_ids = set(roles)
 
     selected = resolution.get("selected_profile")
     profile = profiles.get(selected)
@@ -73,6 +89,12 @@ def validate(run_dir: Path) -> list[str]:
         errors.append("profile-resolution.json: overridden resolution requires override_reason")
     if not resolution.get("overridden") and resolution.get("override_reason") is not None:
         errors.append("profile-resolution.json: non-overridden resolution cannot have override_reason")
+
+    for specialist in sorted(actual_specialists & role_ids):
+        outputs = roles[specialist].get("canonical_outputs", [])
+        for output in outputs:
+            if output.startswith("specialist-") and not (run_dir / output).is_file():
+                errors.append(f"missing required specialist artifact for {specialist}: {output}")
 
     budget = profile["budgets"]
     context_schema = load_json(SCHEMA_DIR / "context-manifest.schema.json")
@@ -99,14 +121,24 @@ def validate(run_dir: Path) -> list[str]:
             errors.append("convergence-report.json: attempt exceeds selected profile budget")
 
     events_path = run_dir / "events.jsonl"
+    events: list[dict[str, Any]] = []
     if events_path.is_file():
-        for line_no, raw in enumerate(events_path.read_text(encoding="utf-8").splitlines(), 1):
-            if not raw.strip():
-                continue
-            event = json.loads(raw)
+        events = read_events(events_path)
+        for line_no, event in enumerate(events, 1):
             actor_role = event.get("actor_role")
-            if actor_role not in role_ids and actor_role not in {"planner", "analyzer", "preparer", "specifier", "convergence_reviewer", "operator"}:
+            if actor_role not in role_ids and actor_role not in {"planner", "operator"}:
                 errors.append(f"events.jsonl:{line_no}: unknown actor_role {actor_role!r}")
+        if not any(event.get("event_type") == "profile.resolved" and "profile-resolution.json" in event.get("artifact_refs", []) for event in events):
+            errors.append("events.jsonl: missing profile.resolved event referencing profile-resolution.json")
+
+    accepted_checkpoints = {
+        event.get("safe_summary")
+        for event in events
+        if event.get("event_type") == "checkpoint.accepted" and event.get("actor_role") == "operator"
+    }
+    for checkpoint in profile["manual_checkpoints"]:
+        if checkpoint not in accepted_checkpoints:
+            errors.append(f"events.jsonl: missing accepted operator checkpoint {checkpoint!r}")
 
     return errors
 
