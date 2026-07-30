@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "pack_id": "rgr-software",
+  "pack_version": "2.0.0",
+  "protocol_version": "local-rgr-v2",
+  "name": "RGR Software Delivery Pack",
+  "description": "Portable deterministic software-delivery protocol with governed roles, profiles, evidence and bounded convergence.",
+  "entrypoint": "ai-pipeline-rgr-orchestrator",
+  "stage_contracts": [
+    {"stage": "prepare", "path": "packs/rgr-software-v2/stages/prepare.json", "sha256": null},
+    {"stage": "brainstorm", "path": "packs/rgr-software-v2/stages/brainstorm.json", "sha256": null},
+    {"stage": "plan", "path": "packs/rgr-software-v2/stages/plan.json", "sha256": null},
+    {"stage": "analyze", "path": "packs/rgr-software-v2/stages/analyze.json", "sha256": null},
+    {"stage": "red_test", "path": "packs/rgr-software-v2/stages/red_test.json", "sha256": null},
+    {"stage": "green_code", "path": "packs/rgr-software-v2/stages/green_code.json", "sha256": null},
+    {"stage": "refactor", "path": "packs/rgr-software-v2/stages/refactor.json", "sha256": null},
+    {"stage": "quality_gate", "path": "packs/rgr-software-v2/stages/quality_gate.json", "sha256": null},
+    {"stage": "converge", "path": "packs/rgr-software-v2/stages/converge.json", "sha256": null}
+  ],
+  "profiles_path": "docs/agent/workflow-profiles.json",
+  "roles_path": "docs/agent/role-contracts.json",
+  "learnings_path": "docs/agent/learnings.json",
+  "capabilities_path": "packs/rgr-software-v2/capabilities.json",
+  "artifact_schemas": [
+    "docs/agent/schemas/profile-resolution.schema.json",
+    "docs/agent/schemas/repository-intelligence.schema.json",
+    "docs/agent/schemas/brainstorm.schema.json",
+    "docs/agent/schemas/detailed-plan.schema.json",
+    "docs/agent/schemas/analysis-report.schema.json",
+    "docs/agent/schemas/stage-result.schema.json",
+    "docs/agent/schemas/specialist-review.schema.json",
+    "docs/agent/schemas/quality-gates.schema.json",
+    "docs/agent/schemas/convergence-report.schema.json",
+    "docs/agent/schemas/context-manifest.schema.json",
+    "docs/agent/schemas/run-event.schema.json",
+    "docs/agent/schemas/export-manifest.schema.json"
+  ],
+  "compatibility": {
+    "rigor_route_import_contract": "packs/rgr-software-v2/rigor-route-import.json",
+    "minimum_runtime": "python>=3.11,git>=2.30",
+    "local_execution": true,
+    "publication_authority": "none"
+  },
+  "integrity": {
+    "algorithm": "sha256",
+    "manifest_sha256": null,
+    "signature": null
+  }
+}
