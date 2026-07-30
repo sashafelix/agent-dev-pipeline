@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-dev-pipeline.local/schemas/detailed-plan.schema.json",
+  "title": "Detailed Plan Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "story_id", "status", "tasks", "criterion_test_map"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0"},
+    "story_id": {"type": "string", "minLength": 1},
+    "status": {"type": "string", "const": "locked"},
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "stage", "description", "depends_on", "outputs", "criteria"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^TASK-[0-9]+$"},
+          "stage": {"type": "string", "enum": ["red_test", "green_code", "refactor", "documentation"]},
+          "description": {"type": "string", "minLength": 5},
+          "depends_on": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^TASK-[0-9]+$"}},
+          "outputs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "criteria": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^SC-[0-9]+$"}}
+        }
+      }
+    },
+    "criterion_test_map": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sc_id", "test_ids"],
+        "properties": {
+          "sc_id": {"type": "string", "pattern": "^SC-[0-9]+$"},
+          "test_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+        }
+      }
+    }
+  }
+}
