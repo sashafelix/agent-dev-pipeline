@@ -1,5 +1,14 @@
-version: 5
-contract_id: local-rgr-v1.3
+version: 6
+contract_id: local-rgr-v2
+pack:
+  manifest: packs/rgr-software-v2/pack.json
+  pack_id: rgr-software
+  pack_version: 2.0.0
+  stage_contract_schema: docs/agent/schemas/stage-contract.schema.json
+  capabilities: packs/rgr-software-v2/capabilities.json
+  rigor_route_import: packs/rgr-software-v2/rigor-route-import.json
+  local_signature_optional: true
+  trusted_platform_may_require_signature: true
 workflow:
   entrypoint: ai-pipeline-rgr-orchestrator
   stage_order: [prepare, brainstorm, plan, analyze, red_test, green_code, refactor, quality_gate, converge]
@@ -48,7 +57,7 @@ artifacts:
     quality-gates.json: quality-gates.schema.json
     convergence-report.json: convergence-report.schema.json
     context-{stage}.json: context-manifest.schema.json
-    specialist-{type}-review.json: governed-specialist-output
+    specialist-{type}-review.json: specialist-review.schema.json
   append_only: [events.jsonl, handoff.md, decision-log.md]
   projections: [brainstorm.md, detailed-plan.md, analysis-report.md, quality-gates.md, convergence-report.md, learnings.md]
   create_on_failure: [error-report.md]
@@ -78,10 +87,24 @@ required_completed_bundle:
   - context-quality_gate.json
   - context-converge.json
 validation:
+  pack: python3 scripts/validate-pack.py packs/rgr-software-v2/pack.json
   global_governance: python3 scripts/validate-governance.py
   run_bundle: python3 scripts/validate-run-bundle.py docs/agent/runs/{story_id}
   run_governance: python3 scripts/validate-run-governance.py docs/agent/runs/{story_id}
   evaluation_corpus: python3 scripts/evaluate-corpus.py
+export:
+  format: local-rgr-evidence-bundle/1.0
+  command: python3 scripts/export-run-bundle.py docs/agent/runs/{story_id} evidence.tar.gz
+  verify: python3 scripts/verify-export-bundle.py evidence.tar.gz
+  deterministic_bytes: true
+  contains_story_source: false
+  contains_secrets: false
+  hash_algorithm: sha256
+  publication_authority: none
+compatibility:
+  rigor_route_import_contract: rigor-route-pack-import-v1
+  local_verdicts_are_evidence_not_platform_authority: true
+  platform_policy_may_only_narrow: true
 failure_policy:
   retry_max: 1
   retry_allowed_for: [transient_tooling, flaky_test_container_startup]
