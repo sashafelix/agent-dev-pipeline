@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "pack_id": "rgr-software",
+  "pack_version": "2.0.0",
+  "stage": "prepare",
+  "sequence": 1,
+  "role": "repository_analyst",
+  "input_artifacts": ["plan-input.md", "profile-resolution.json", "context-prepare.json"],
+  "output_artifacts": ["repository-intelligence.json"],
+  "required_capabilities": ["bounded-filesystem-read", "canonical-json", "schema-validation", "append-only-events"],
+  "forbidden_capabilities": ["bounded-story-write", "network write", "risk downgrade", "stage transition"],
+  "deterministic_exit_conditions": ["repository intelligence schema valid", "exact revision recorded", "inspection budgets recorded", "no story source changed"],
+  "failure_classes": ["repository-boundary-violation", "symlink-escape", "schema-violation", "unknown-revision"],
+  "context_policy": {"manifest_required": true, "profile_budget_enforced": true, "repository_content_untrusted": true},
+  "retry_policy": {"max_attempts": 1, "retryable_classes": []},
+  "next_stage": "brainstorm"
+}

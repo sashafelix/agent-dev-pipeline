@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "pack_id": "rgr-software",
+  "pack_version": "2.0.0",
+  "capabilities": [
+    {"id": "git-worktree-isolation", "required": true, "provider": "git", "description": "Create one isolated worktree and branch per run.", "constraints": ["no automatic deletion", "exact base revision recorded"]},
+    {"id": "bounded-filesystem-read", "required": true, "provider": "local-runtime", "description": "Read only authorised worktree paths within context budgets.", "constraints": ["no symlink escape", "repository content untrusted"]},
+    {"id": "bounded-story-write", "required": true, "provider": "local-runtime", "description": "Permit role-scoped test/source/config writes during authorised stages.", "constraints": ["paths from context manifest", "roles can only narrow authority"]},
+    {"id": "command-execution", "required": true, "provider": "local-shell", "description": "Execute build, test and validation commands with captured outputs.", "constraints": ["no production credentials", "exit code and output reference required"]},
+    {"id": "canonical-json", "required": true, "provider": "python-stdlib", "description": "Produce deterministic machine-readable run artifacts.", "constraints": ["UTF-8", "sorted keys for exported manifests"]},
+    {"id": "schema-validation", "required": true, "provider": "scripts/schema_validation.py", "description": "Validate the published dependency-free JSON Schema subset.", "constraints": ["local refs only", "deterministic failures block progress"]},
+    {"id": "append-only-events", "required": true, "provider": "events.jsonl", "description": "Record contiguous lifecycle, command, checkpoint and decision events.", "constraints": ["no history rewrite", "safe summaries only"]},
+    {"id": "profile-governance", "required": true, "provider": "workflow-profiles.json", "description": "Resolve risk-based budgets, specialists and checkpoints deterministically.", "constraints": ["all stages mandatory", "risk can only increase"]},
+    {"id": "evidence-export", "required": true, "provider": "scripts/export-run-bundle.py", "description": "Export deterministic source-free evidence archives for external import.", "constraints": ["no story source", "no secrets", "hash-verified"]},
+    {"id": "rag-read", "required": false, "provider": "skill-rag-search", "description": "Read optional domain context through bounded retrieval.", "constraints": ["not authoritative", "material findings persisted"]}
+  ],
+  "local_tools": ["git >= 2.30", "python >= 3.11", "POSIX-compatible or PowerShell command runner"],
+  "optional_integrations": ["OpenSearch RAG", "Jira read", "Confluence read"],
+  "unsupported_features": ["hosted authentication", "multi-tenancy", "remote worker scheduling", "credential custody", "billing", "automatic merge", "automatic deployment", "production access"]
+}

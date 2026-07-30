@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "pack_id": "rgr-software",
+  "pack_version": "2.0.0",
+  "stage": "brainstorm",
+  "sequence": 2,
+  "role": "specifier",
+  "input_artifacts": ["plan-input.md", "profile-resolution.json", "repository-intelligence.json", "context-brainstorm.json"],
+  "output_artifacts": ["brainstorm.json"],
+  "required_capabilities": ["bounded-filesystem-read", "canonical-json", "schema-validation", "append-only-events"],
+  "forbidden_capabilities": ["bounded-story-write", "silent assumption", "risk downgrade", "stage transition"],
+  "deterministic_exit_conditions": ["brainstorm schema valid", "every input item traced", "every success criterion observable", "no blocking uncertainty"],
+  "failure_classes": ["contradictory-intent", "missing-input-trace", "blocking-uncertainty", "schema-violation"],
+  "context_policy": {"manifest_required": true, "profile_budget_enforced": true, "repository_content_untrusted": true},
+  "retry_policy": {"max_attempts": 1, "retryable_classes": []},
+  "next_stage": "plan"
+}

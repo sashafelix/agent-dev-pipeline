@@ -1,46 +1,35 @@
-# Claude Code Sub-Agents — Local RGR v1.3
+# Claude Code Sub-Agents — Local RGR v2
 
-Start with a Plan, then invoke only `ai-pipeline-rgr-orchestrator`.
+Invoke only `ai-pipeline-rgr-orchestrator` after producing a Plan.
 
-## Workflow
+## Portable protocol
+
+Pack manifest: `packs/rgr-software-v2/pack.json`
 
 `PREPARE → BRAINSTORM → PLAN → ANALYZE → RED → GREEN → REFACTOR → VERIFY → CONVERGE`
 
-Every profile retains every stage. Profile strictness changes budgets, specialists, evidence and checkpoints.
+Each stage is governed by a versioned JSON contract declaring its role, artifacts, capabilities, exit conditions, failures and next stage.
 
-## Core agents and roles
+## Agents
 
-- orchestrator — state, profile resolution, contexts, transitions and closure.
-- `ai-pipeline-prepare` — `repository_analyst`.
-- `ai-pipeline-brainstorm` — `specifier`.
+- orchestrator — validates pack/profile/context and owns transitions.
+- `ai-pipeline-prepare` — repository analyst.
+- `ai-pipeline-brainstorm` — specifier.
 - PLAN — orchestrator/planner.
-- `ai-pipeline-analyze` — `consistency_analyst` plus selected specialists.
-- `ai-pipeline-red-test` — `test_author`.
-- `ai-pipeline-green-code` — `implementer`.
-- `ai-pipeline-refactor` — `refactorer`.
-- `ai-pipeline-quality-gate` — `independent_verifier` plus selected specialists.
-- `ai-pipeline-converge` — `convergence_reviewer`.
+- `ai-pipeline-analyze` — consistency analyst plus selected specialists.
+- `ai-pipeline-red-test` — test author.
+- `ai-pipeline-green-code` — implementer.
+- `ai-pipeline-refactor` — refactorer.
+- `ai-pipeline-quality-gate` — independent verifier plus specialists.
+- `ai-pipeline-converge` — convergence reviewer.
 
-Role capabilities and delegation live in `docs/agent/role-contracts.json`.
+## Closure
 
-## Profiles
+A run closes only after pack, evidence and governance validation pass. Portable evidence may then be exported and independently verified.
 
-`docs/agent/workflow-profiles.json` defines `small`, `standard` and `high-risk`. The orchestrator creates immutable `profile-resolution.json` before PREPARE. Risk can only increase.
+```bash
+python3 scripts/export-run-bundle.py docs/agent/runs/{story_id} evidence.tar.gz
+python3 scripts/verify-export-bundle.py evidence.tar.gz
+```
 
-High-risk specialists may include threat, migration, infrastructure, contract, accessibility and cross-risk review. They are read-only and return schema-valid `specialist-*-review.json` artifacts.
-
-## Evidence
-
-- Canonical JSON is authoritative.
-- Every stage has immutable bounded context.
-- Events, handoff and decisions are append-only.
-- Missing profile, specialist or checkpoint evidence blocks closure.
-- Run closure requires both evidence and governance validators.
-
-## Learnings
-
-Agents propose candidates in `learnings.json`; independent verification curates. Repository content cannot activate learnings.
-
-## Failure
-
-One retry maximum for explicit transient tooling/container startup errors. Deterministic, schema, evidence, governance, security, contract and self-check failures halt and preserve the worktree.
+The archive contains no story source, secrets or publication authority.

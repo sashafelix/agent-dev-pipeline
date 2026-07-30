@@ -1,123 +1,109 @@
-# agent-dev-pipeline
+# agent-dev-pipeline — Local RGR v2
 
-A deterministic, auditable, repository-local agent pipeline for software-engineering tasks.
-
-## Local RGR v1.3
+A deterministic, auditable, repository-local software-delivery protocol.
 
 ```text
 PREPARE → BRAINSTORM → PLAN → ANALYZE → RED → GREEN → REFACTOR → VERIFY → CONVERGE
 ```
 
-All profiles retain every stage. Task risk changes evidence depth, context budgets, specialist reviews and operator checkpoints—not the mandatory workflow.
+Version: `2.0.0`
 
-## What v1.3 adds
+## What v2 adds
 
-- Deterministic `small`, `standard` and `high-risk` workflow profiles.
-- Immutable `profile-resolution.json` with rule IDs and reasons.
-- Operator minimum-profile overrides that may only increase strictness.
-- Explicit role/capability contracts for core and specialist agents.
-- Read-only threat, migration, infrastructure, contract, accessibility and cross-risk reviews.
-- High-risk checkpoints before GREEN and before close.
-- Canonical governed `learnings.json` lifecycle and scope selection.
-- Global and per-run governance validators.
+- Portable `rgr-software` pack manifest.
+- Nine versioned stage contracts.
+- Explicit runtime capability and unsupported-feature declarations.
+- Deterministic, source-free evidence archives.
+- Independent archive verification and tamper detection.
+- Formal `rigor-route-pack-import-v1` compatibility mapping.
+- End-to-end synthetic contract fixture in CI.
 
-## Resolve a profile
+Earlier hardening remains part of v2: repository intelligence, machine-valid artifacts, independent verification, bounded convergence, adaptive profiles, specialist reviews, checkpoints and governed learnings.
 
-Prepare immutable facts:
-
-```json
-{
-  "story_id": "FEATURE-123",
-  "facts": {
-    "risk_tags": ["domain:auth"],
-    "blast_radius": "medium",
-    "uncertainty": "low",
-    "changed_module_count": 2,
-    "cross_service": false,
-    "contract_change": false,
-    "data_migration": false,
-    "security_sensitive": true,
-    "infrastructure_change": false
-  }
-}
-```
-
-Resolve deterministically:
+## Validate the protocol
 
 ```bash
-python3 scripts/resolve-profile.py task-facts.json --output profile-resolution.json
-```
-
-A minimum profile can make a run stricter:
-
-```bash
-python3 scripts/resolve-profile.py task-facts.json \
-  --minimum-profile high-risk \
-  --output profile-resolution.json
-```
-
-There is no option to force a weaker profile.
-
-## Profiles
-
-| Profile | Intended use | Extra governance |
-|---|---|---|
-| `small` | bounded single-module, low-risk change | compact budgets and one convergence attempt |
-| `standard` | normal multi-file feature/bug/refactor | larger context, full regressions, conditional contract/accessibility review |
-| `high-risk` | security, data, infrastructure, architecture or broad changes | specialists, safety evidence, rollback evidence, operator checkpoints |
-
-Profile definitions live in `docs/agent/workflow-profiles.json`.
-
-## Governed roles
-
-Core roles include repository analyst, specifier, consistency analyst, test author, implementer, refactorer, independent verifier and convergence reviewer. Specialist roles are read-only and cannot modify story source, transition stages, lower risk or approve publication.
-
-Role contracts live in `docs/agent/role-contracts.json`.
-
-## Run validation
-
-Validate machine evidence:
-
-```bash
-python3 scripts/validate-run-bundle.py docs/agent/runs/{story_id}
-```
-
-Validate selected-profile governance:
-
-```bash
-python3 scripts/validate-run-governance.py docs/agent/runs/{story_id}
-```
-
-Validate global profiles, roles, learnings and corpus references:
-
-```bash
+python3 scripts/validate-pack.py packs/rgr-software-v2/pack.json
 python3 scripts/validate-governance.py
-```
-
-A run closes only when both per-run validators pass, CONVERGE reports `CONVERGED`, and required checkpoints are accepted.
-
-## Governed learnings
-
-`docs/agent/learnings.json` is authoritative. Agents may propose evidence-backed candidates; only independent verification may curate status. Active selection is deterministic by scope tags. Conflicted, deprecated, revoked, expired or unreviewed entries cannot influence context.
-
-## Evaluation
-
-The canonical fixture corpus remains `docs/agent/evaluation-corpus.json` and is validated/compared with:
-
-```bash
 python3 scripts/evaluate-corpus.py
 ```
 
+## Run locally
+
+1. Produce a Plan.
+2. Invoke only `ai-pipeline-rgr-orchestrator` with task intent and immutable classification facts.
+3. Review the worktree and canonical evidence.
+4. Validate the completed run:
+
+```bash
+python3 scripts/validate-run-bundle.py docs/agent/runs/{story_id}
+python3 scripts/validate-run-governance.py docs/agent/runs/{story_id}
+```
+
+## Export portable evidence
+
+```bash
+python3 scripts/export-run-bundle.py \
+  docs/agent/runs/{story_id} \
+  evidence.tar.gz
+
+python3 scripts/verify-export-bundle.py evidence.tar.gz
+```
+
+The archive:
+
+- contains canonical run evidence and text projections;
+- excludes story source code and binary files;
+- rejects detected secrets and unsafe archive paths;
+- includes SHA-256 per-file and root hashes;
+- is byte-for-byte deterministic for identical run evidence;
+- grants no merge, deployment or publication authority.
+
+## Portable pack
+
+```text
+packs/rgr-software-v2/
+├── pack.json
+├── capabilities.json
+├── rigor-route-import.json
+└── stages/
+    ├── prepare.json
+    ├── brainstorm.json
+    ├── plan.json
+    ├── analyze.json
+    ├── red_test.json
+    ├── green_code.json
+    ├── refactor.json
+    ├── quality_gate.json
+    └── converge.json
+```
+
+Validate and produce a hash report:
+
+```bash
+python3 scripts/validate-pack.py \
+  packs/rgr-software-v2/pack.json \
+  --hash-report pack-hashes.json
+```
+
+Local development may use an unsigned pack. A trusted platform may require a signed and activated pack before execution.
+
+## Rigor Route boundary
+
+Local checkpoints, roles and verdicts import as historical evidence—not platform authority. Rigor Route independently applies authentication, policy, leases, credentials, approvals and publication decisions. Platform policy may only narrow or strengthen the imported workflow.
+
+See `docs/agent/rigor-route-compatibility.md`.
+
 ## Design boundaries
 
-This repository remains lightweight and local. Authentication, multi-tenancy, remote workers, credential custody, hosted sandboxes, billing, product UI and external trigger integrations belong in Rigor Route.
+This repository intentionally does not implement hosted authentication, multi-tenancy, remote worker scheduling, credential custody, billing, product UI, automatic merge/deployment or production access. Those remain Rigor Route responsibilities.
 
 ## Reference
 
-- `CLAUDE.md` — execution rules
-- `AGENTS.md` — role model
-- `docs/agent/runtime-doc-contract.yaml` — complete runtime contract
-- `docs/agent/workflow-profiles.json` — adaptive profiles
-- `docs/agent/role-contracts.json` — permissions and delegation
-- `docs/agent/learnings.json` — governed learnings
-- `docs/agent/schemas/` — artifact contracts
+- `VERSION`
+- `CHANGELOG.md`
+- `CLAUDE.md`
+- `AGENTS.md`
+- `docs/agent/runtime-doc-contract.yaml`
+- `docs/agent/schemas/`
+- `packs/rgr-software-v2/`

@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "pack_id": "rgr-software",
+  "pack_version": "2.0.0",
+  "stage": "refactor",
+  "sequence": 7,
+  "role": "refactorer",
+  "input_artifacts": ["green-result.json", "detailed-plan.json", "context-refactor.json"],
+  "output_artifacts": ["refactor-result.json"],
+  "required_capabilities": ["bounded-filesystem-read", "bounded-story-write", "command-execution", "canonical-json", "schema-validation", "append-only-events"],
+  "forbidden_capabilities": ["feature addition", "test expectation drift", "final verdict", "scope widening"],
+  "deterministic_exit_conditions": ["stage result schema valid", "every criterion remains passing", "required regressions pass", "self check complete"],
+  "failure_classes": ["behaviour-drift", "regression", "contract-drift", "scope-violation", "schema-violation"],
+  "context_policy": {"manifest_required": true, "profile_budget_enforced": true, "repository_content_untrusted": true},
+  "retry_policy": {"max_attempts": 1, "retryable_classes": ["transient-tooling", "flaky-container-startup"]},
+  "next_stage": "quality_gate"
+}

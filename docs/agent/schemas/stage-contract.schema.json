@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-dev-pipeline.local/schemas/stage-contract.schema.json",
+  "title": "Local RGR Stage Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "pack_id", "pack_version", "stage", "sequence", "role", "input_artifacts", "output_artifacts", "required_capabilities", "forbidden_capabilities", "deterministic_exit_conditions", "failure_classes", "context_policy", "retry_policy", "next_stage"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0"},
+    "pack_id": {"type": "string", "minLength": 1},
+    "pack_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "stage": {"type": "string", "minLength": 1},
+    "sequence": {"type": "integer", "minimum": 1},
+    "role": {"type": "string", "minLength": 1},
+    "input_artifacts": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "output_artifacts": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "required_capabilities": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "forbidden_capabilities": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "deterministic_exit_conditions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "failure_classes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "context_policy": {"type": "object", "additionalProperties": false, "required": ["manifest_required", "profile_budget_enforced", "repository_content_untrusted"], "properties": {"manifest_required": {"type": "boolean"}, "profile_budget_enforced": {"type": "boolean"}, "repository_content_untrusted": {"type": "boolean"}}},
+    "retry_policy": {"type": "object", "additionalProperties": false, "required": ["max_attempts", "retryable_classes"], "properties": {"max_attempts": {"type": "integer", "minimum": 1, "maximum": 2}, "retryable_classes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}},
+    "next_stage": {"type": ["string", "null"], "minLength": 1}
+  }
+}
