@@ -1,21 +1,17 @@
-version: 3
+version: 4
+contract_id: local-rgr-v1.2
 workflow:
   entrypoint: ai-pipeline-rgr-orchestrator
-  stage_order:
-    - prepare
-    - brainstorm
-    - plan
-    - analyze
-    - red_test
-    - green_code
-    - refactor
-    - quality_gate
-    - converge
+  stage_order: [prepare, brainstorm, plan, analyze, red_test, green_code, refactor, quality_gate, converge]
   direct_stage_invocation: redirect_to_orchestrator
+  canonical_json_is_authoritative: true
+  markdown_is_projection: true
   role_separation:
-    implementer: ai-pipeline-green-code
-    final_reviewer: ai-pipeline-quality-gate
-    reviewer_must_be_independent: true
+    red_test: test_author
+    green_code: implementer
+    refactor: refactorer
+    quality_gate: independent_verifier
+    reviewer_identity_must_differ_from_implementer: true
   convergence:
     max_attempts: 2
     resume_from_earliest_invalid_stage: true
@@ -24,31 +20,34 @@ workflow:
     path: .agent-runs/{story_id}
     branch: story/{story_id}
     cleanup: manual
-writes:
-  replace_in_place:
-    - docs/agent/runs/{story_id}/run-context.md
-    - docs/agent/runs/{story_id}/detailed-plan.md
-    - docs/agent/runs/{story_id}/quality-gates.md
-    - docs/agent/learnings.md
-    - docs/agent/current-run.md
+artifacts:
   write_once:
-    - docs/agent/runs/{story_id}/plan-input.md
-    - docs/agent/runs/{story_id}/repository-intelligence.json
-    - docs/agent/runs/{story_id}/brainstorm.md
-    - docs/agent/runs/{story_id}/brainstorm.json
-    - docs/agent/runs/{story_id}/detailed-plan.json
-    - docs/agent/runs/{story_id}/analysis-report.json
-  append_only:
-    - docs/agent/runs/{story_id}/handoff.md
-    - docs/agent/runs/{story_id}/decision-log.md
-    - docs/agent/runs/{story_id}/events.jsonl
+    plan-input.md: null
+    repository-intelligence.json: repository-intelligence.schema.json
+    brainstorm.json: brainstorm.schema.json
+    detailed-plan.json: detailed-plan.schema.json
+    analysis-report.json: analysis-report.schema.json
+  stage_results:
+    red-result.json: stage-result.schema.json
+    green-result.json: stage-result.schema.json
+    refactor-result.json: stage-result.schema.json
   attempt_versioned:
-    - docs/agent/runs/{story_id}/quality-gates.json
-    - docs/agent/runs/{story_id}/convergence-report.json
-    - docs/agent/runs/{story_id}/context-*.json
+    quality-gates.json: quality-gates.schema.json
+    convergence-report.json: convergence-report.schema.json
+    context-{stage}.json: context-manifest.schema.json
+  append_only:
+    - events.jsonl
+    - handoff.md
+    - decision-log.md
+  projections:
+    - brainstorm.md
+    - detailed-plan.md
+    - analysis-report.md
+    - quality-gates.md
+    - convergence-report.md
   create_on_failure:
-    - docs/agent/runs/{story_id}/error-report.md
-required_story_docs:
+    - error-report.md
+required_completed_bundle:
   - run-context.md
   - plan-input.md
   - repository-intelligence.json
@@ -57,45 +56,60 @@ required_story_docs:
   - detailed-plan.md
   - detailed-plan.json
   - analysis-report.json
+  - red-result.json
+  - green-result.json
+  - refactor-result.json
   - handoff.md
   - quality-gates.md
   - quality-gates.json
   - convergence-report.json
   - decision-log.md
   - events.jsonl
+  - context-prepare.json
+  - context-brainstorm.json
+  - context-plan.json
+  - context-analyze.json
+  - context-red_test.json
+  - context-green_code.json
+  - context-refactor.json
+  - context-quality_gate.json
+  - context-converge.json
 stage_exit_requirements:
   prepare:
-    - revision-scoped repository intelligence validates
+    - repository intelligence validates and is revision scoped
     - no source files changed
   brainstorm:
-    - every input item maps to a declarative success criterion
-    - canonical brainstorm JSON validates
+    - every input item maps to at least one declarative success criterion
+    - no blocking uncertainty remains
   plan:
-    - every criterion maps to planned RED evidence
-    - detailed plan is locked before ANALYZE exits
+    - task dependency graph is acyclic
+    - every criterion maps to planned tests
+    - status is locked
   analyze:
-    - zero hard consistency findings
-    - unresolved correctness uncertainty blocks RED
+    - zero hard findings
+    - zero unresolved correctness uncertainties
   red_test:
-    - failing tests exist for every testable criterion
+    - actor_role is test_author
+    - every criterion has red_confirmed evidence
   green_code:
-    - all RED tests pass with no regression
+    - actor_role is implementer
+    - every criterion has passing evidence
   refactor:
-    - all tests remain green with no behaviour drift
+    - actor_role is refactorer
+    - every criterion remains passing
   quality_gate:
     - reviewer_role is independent_verifier
-    - explicit PASS, FAIL, or WARN with criterion evidence
+    - reviewer identity differs from implementer
+    - every criterion has independently verified evidence
   converge:
-    - outcome is CONVERGED, REMEDIATE, or FAILED
-    - CONVERGED has zero blocking gaps
+    - CONVERGED has zero blocking gaps and no earliest invalid stage
 failure_policy:
   halt_on_any_stage_failure: true
   retry_max: 1
   retry_allowed_for: [transient_tooling, flaky_test_container_startup]
-  retry_forbidden_for: [assertion_failure, compile_error, self_check_incomplete, security_violation, contract_violation]
+  retry_forbidden_for: [assertion_failure, compile_error, schema_violation, evidence_violation, security_violation, contract_violation, self_check_incomplete]
   error_report_required: true
   preserve_worktree: true
 validation:
-  command: python3 scripts/validate-run-bundle.py docs/agent/runs/{story_id}
-  canonical_json_is_authoritative: true
-  markdown_is_projection: true
+  run_bundle: python3 scripts/validate-run-bundle.py docs/agent/runs/{story_id}
+  evaluation_corpus: python3 scripts/evaluate-corpus.py
