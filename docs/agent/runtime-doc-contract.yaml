@@ -1,65 +1,93 @@
-version: 2
+version: 3
 workflow:
   entrypoint: ai-pipeline-rgr-orchestrator
   stage_order:
+    - prepare
     - brainstorm
+    - plan
+    - analyze
     - red_test
     - green_code
     - refactor
     - quality_gate
+    - converge
   direct_stage_invocation: redirect_to_orchestrator
+  role_separation:
+    implementer: ai-pipeline-green-code
+    final_reviewer: ai-pipeline-quality-gate
+    reviewer_must_be_independent: true
+  convergence:
+    max_attempts: 2
+    resume_from_earliest_invalid_stage: true
   isolation:
     mode: git_worktree
     path: .agent-runs/{story_id}
     branch: story/{story_id}
-    cleanup: manual  # operator-driven; agents never auto-delete worktrees
+    cleanup: manual
 writes:
   replace_in_place:
     - docs/agent/runs/{story_id}/run-context.md
-    - docs/agent/runs/{story_id}/detailed-plan.md  # pre-RED only; locked once RED starts
+    - docs/agent/runs/{story_id}/detailed-plan.md
     - docs/agent/runs/{story_id}/quality-gates.md
     - docs/agent/learnings.md
     - docs/agent/current-run.md
   write_once:
     - docs/agent/runs/{story_id}/plan-input.md
+    - docs/agent/runs/{story_id}/repository-intelligence.json
     - docs/agent/runs/{story_id}/brainstorm.md
+    - docs/agent/runs/{story_id}/brainstorm.json
+    - docs/agent/runs/{story_id}/detailed-plan.json
+    - docs/agent/runs/{story_id}/analysis-report.json
   append_only:
     - docs/agent/runs/{story_id}/handoff.md
     - docs/agent/runs/{story_id}/decision-log.md
-  append_only_exception:
-    description: >
-      The orchestrator may delete a partial stage section from handoff.md ONLY
-      during an explicit documented resume (see orchestrator Resume Policy).
-      The action must be logged in decision-log.md.
+    - docs/agent/runs/{story_id}/events.jsonl
+  attempt_versioned:
+    - docs/agent/runs/{story_id}/quality-gates.json
+    - docs/agent/runs/{story_id}/convergence-report.json
+    - docs/agent/runs/{story_id}/context-*.json
   create_on_failure:
     - docs/agent/runs/{story_id}/error-report.md
 required_story_docs:
-  - docs/agent/runs/{story_id}/run-context.md
-  - docs/agent/runs/{story_id}/plan-input.md
-  - docs/agent/runs/{story_id}/brainstorm.md
-  - docs/agent/runs/{story_id}/detailed-plan.md
-  - docs/agent/runs/{story_id}/handoff.md
-  - docs/agent/runs/{story_id}/quality-gates.md
-  - docs/agent/runs/{story_id}/decision-log.md
+  - run-context.md
+  - plan-input.md
+  - repository-intelligence.json
+  - brainstorm.md
+  - brainstorm.json
+  - detailed-plan.md
+  - detailed-plan.json
+  - analysis-report.json
+  - handoff.md
+  - quality-gates.md
+  - quality-gates.json
+  - convergence-report.json
+  - decision-log.md
+  - events.jsonl
 stage_exit_requirements:
+  prepare:
+    - revision-scoped repository intelligence validates
+    - no source files changed
   brainstorm:
-    - brainstorm.md with all 5 lenses populated
-    - every Jira AC mapped to at least one declarative SC
-    - handoff.md BRAINSTORM section with self-check block
+    - every input item maps to a declarative success criterion
+    - canonical brainstorm JSON validates
+  plan:
+    - every criterion maps to planned RED evidence
+    - detailed plan is locked before ANALYZE exits
+  analyze:
+    - zero hard consistency findings
+    - unresolved correctness uncertainty blocks RED
   red_test:
-    - failing tests for every SC (trace matrix)
-    - handoff.md RED section with comprehension evidence + self-check block
+    - failing tests exist for every testable criterion
   green_code:
-    - all RED tests passing; no regression
-    - handoff.md GREEN section with comprehension + checkpoints + self-check block
+    - all RED tests pass with no regression
   refactor:
-    - all tests still green; no behavior drift
-    - handoff.md REFACTOR section with comprehension + checkpoints + self-check block
+    - all tests remain green with no behaviour drift
   quality_gate:
-    - quality-gates.md with explicit PASS | FAIL | WARN verdict
-    - SC-to-test trace complete
-    - hard-FAIL checklist: all unchecked
-    - decision-index.md updated
+    - reviewer_role is independent_verifier
+    - explicit PASS, FAIL, or WARN with criterion evidence
+  converge:
+    - outcome is CONVERGED, REMEDIATE, or FAILED
+    - CONVERGED has zero blocking gaps
 failure_policy:
   halt_on_any_stage_failure: true
   retry_max: 1
@@ -67,3 +95,7 @@ failure_policy:
   retry_forbidden_for: [assertion_failure, compile_error, self_check_incomplete, security_violation, contract_violation]
   error_report_required: true
   preserve_worktree: true
+validation:
+  command: python3 scripts/validate-run-bundle.py docs/agent/runs/{story_id}
+  canonical_json_is_authoritative: true
+  markdown_is_projection: true

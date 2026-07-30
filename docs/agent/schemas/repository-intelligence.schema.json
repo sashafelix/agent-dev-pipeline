@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rigorroute.com/schemas/agent-dev-pipeline/repository-intelligence.v1.json",
+  "title": "RepositoryIntelligence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "story_id", "revision", "project_root", "stack", "commands", "modules", "impact", "inspection"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "story_id": {"type": "string", "minLength": 1},
+    "revision": {"type": "string", "minLength": 7},
+    "project_root": {"type": "string", "minLength": 1},
+    "stack": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
+    "frameworks": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "commands": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["build", "test", "lint"],
+      "properties": {
+        "build": {"type": "array", "items": {"type": "string"}},
+        "test": {"type": "array", "items": {"type": "string"}},
+        "lint": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "modules": {"type": "array", "items": {"$ref": "#/$defs/pathReason"}},
+    "symbols": {"type": "array", "items": {"$ref": "#/$defs/symbol"}},
+    "impact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["files", "tests"],
+      "properties": {
+        "files": {"type": "array", "items": {"$ref": "#/$defs/pathReason"}},
+        "symbols": {"type": "array", "items": {"$ref": "#/$defs/symbol"}},
+        "tests": {"type": "array", "items": {"$ref": "#/$defs/pathReason"}}
+      }
+    },
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "inspection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["paths_inspected", "paths_omitted", "file_budget", "byte_budget"],
+      "properties": {
+        "paths_inspected": {"type": "array", "items": {"type": "string"}},
+        "paths_omitted": {"type": "array", "items": {"type": "string"}},
+        "file_budget": {"type": "integer", "minimum": 1},
+        "byte_budget": {"type": "integer", "minimum": 1}
+      }
+    }
+  },
+  "$defs": {
+    "pathReason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "reason", "confidence"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "confidence": {"type": "string", "enum": ["high", "medium", "low"]}
+      }
+    },
+    "symbol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "path", "reason", "confidence"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "confidence": {"type": "string", "enum": ["high", "medium", "low"]}
+      }
+    }
+  }
+}

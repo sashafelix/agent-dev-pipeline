@@ -1,173 +1,119 @@
 # agent-dev-pipeline
 
-A deterministic, auditable agent pipeline for software-engineering tasks. Built around five stages with explicit evidence between each.
+A deterministic, auditable, repository-local agent pipeline for software-engineering tasks.
 
-```
-BRAINSTORM → RED → GREEN → REFACTOR → VERIFY
-```
-
-Every run is isolated in a git worktree, leaves a full paper trail, and ends with a PASS / FAIL / WARN verdict backed by a hard-FAIL checklist.
-
-## What is "a task"?
-
-Stack- and source-agnostic. A unit of work can be any of:
-
-- A **Jira story** with acceptance criteria
-- A **feature description** (free text + bullet points)
-- A **user request** (free-form)
-- A **RAG-derived task** (query result rows from `skill-rag-search`)
-
-The target may be backend, frontend, mobile, infra, or polyglot — declared as `stack` in `run-context.md`. The pipeline adapts test framework, file layout, and build commands to the stack; the flow and evidence requirements stay the same.
-
-## The five stages
-
-| # | Stage | Agent | Produces |
-| --- | --- | --- | --- |
-| 1 | BRAINSTORM | `ai-pipeline-brainstorm` | `brainstorm.md` — every intent point becomes a GIVEN/WHEN/THEN success criterion |
-| 2 | RED | `ai-pipeline-red-test` | Failing tests, one per SC; trace matrix |
-| 3 | GREEN | `ai-pipeline-green-code` | Minimum code that turns every RED test green; incremental checkpoints |
-| 4 | REFACTOR | `ai-pipeline-refactor` | Cleanup without behavior drift |
-| 5 | VERIFY | `ai-pipeline-quality-gate` | PASS / FAIL / WARN verdict in `quality-gates.md` |
-
-Coordinating all five: `ai-pipeline-rgr-orchestrator` — owns worktree creation, stage transitions, failure handling, and run closure.
-
-## Quick start
-
-1. Prepare a unit of work: an identifier (Jira key / feature slug / request slug), intent payload (ACs / bullets / free text), target `stack`, and `project_root`.
-2. Invoke `ai-pipeline-rgr-orchestrator` — it creates the worktree at `.agent-runs/{story_id}` on branch `story/{story_id}`, and persists `plan-input.md` (write-once).
-3. The orchestrator walks the five stages, invoking each stage agent in turn.
-4. On completion, read `docs/agent/runs/{story_id}/quality-gates.md` for the verdict.
-5. On failure, read `docs/agent/runs/{story_id}/error-report.md`. The worktree is preserved for inspection.
-
-Stage agents do not accept direct invocation — they redirect to the orchestrator.
-
-## Using with Claude Code
-
-Strict two-step flow. `CLAUDE.md` at the repo root is auto-loaded on every session and defines the entry rules.
-
-1. Produce a plan (Claude Code plan mode or the `Plan` sub-agent).
-2. Invoke the `ai-pipeline-rgr-orchestrator` sub-agent to execute the run end-to-end.
-
-Do **not** invoke stage sub-agents directly (`ai-pipeline-brainstorm`, `ai-pipeline-red-test`, `ai-pipeline-green-code`, `ai-pipeline-refactor`, `ai-pipeline-quality-gate`) — they redirect to the orchestrator.
-
-### Step 1 — Plan the work
-
-In plan mode (or via the `Plan` sub-agent), provide:
+## Local RGR v1.1 workflow
 
 ```text
-Create a plan for this task.
-
-story_id: <jira-key-or-feature-slug>
-input_source: <jira|feature-description|user-request|rag-derived>
-stack: <target-stack>
-project_root: <path-within-repo>
-
-Raw intent:
-- <intent point 1>
-- <intent point 2>
-
-Constraints:
-- Follow deterministic flow: BRAINSTORM -> RED -> GREEN -> REFACTOR -> VERIFY
-- Keep scope limited to this story
-- Flag assumptions as [UNCERTAIN]
-
-Output:
-- Ordered implementation plan with dependencies and risks
+PREPARE → BRAINSTORM → PLAN → ANALYZE → RED → GREEN → REFACTOR → VERIFY → CONVERGE
 ```
 
-### Step 2 — Hand off to the orchestrator
+Every run is isolated in a git worktree, records canonical machine-readable evidence plus readable Markdown projections, and ends with a bounded convergence decision backed by independent verification.
 
-Invoke the `ai-pipeline-rgr-orchestrator` sub-agent with:
+## What changed in v1.1
+
+- **PREPARE** creates revision-scoped repository intelligence and a task-impact map.
+- **ANALYZE** blocks contradictions, missing criterion coverage, and unsupported plans before RED.
+- **VERIFY** is explicitly independent from the GREEN implementer and reconstructs evidence from artifacts and the git diff.
+- **CONVERGE** checks the final implementation against locked intent and permits at most two remediation attempts.
+- `events.jsonl` provides a contiguous, append-only run history.
+- `context-{stage}.json` records exactly which files, artifacts, learnings, and budgets each stage received.
+- Canonical JSON artifacts are authoritative; Markdown remains the reviewer-readable projection.
+- `scripts/validate-run-bundle.py` validates required artifacts, stage order, traceability, reviewer independence, and convergence invariants.
+- `docs/agent/evaluation-corpus.yaml` defines representative and adversarial tasks for comparing pipeline versions.
+
+## Task inputs
+
+A unit of work may be a Jira story, feature description, user request, or RAG-derived task. Supply:
+
+- `story_id`
+- `input_source`
+- `stack`
+- `project_root`
+- raw intent
+- Plan handoff
+
+The pipeline is stack-agnostic. Repository-specific commands and patterns are discovered in PREPARE and must be evidenced or marked uncertain.
+
+## Stage ownership
+
+| Stage | Owner | Primary evidence |
+|---|---|---|
+| PREPARE | `ai-pipeline-prepare` | `repository-intelligence.json` |
+| BRAINSTORM | `ai-pipeline-brainstorm` | `brainstorm.md`, `brainstorm.json` |
+| PLAN | orchestrator | `detailed-plan.md`, `detailed-plan.json` |
+| ANALYZE | `ai-pipeline-analyze` | `analysis-report.json` |
+| RED | `ai-pipeline-red-test` | failing tests and trace evidence |
+| GREEN | `ai-pipeline-green-code` | minimal passing implementation |
+| REFACTOR | `ai-pipeline-refactor` | cleanup with unchanged behaviour |
+| VERIFY | `ai-pipeline-quality-gate` | independent `quality-gates.json` verdict |
+| CONVERGE | `ai-pipeline-converge` | `convergence-report.json` |
+
+`ai-pipeline-rgr-orchestrator` owns worktree creation, immutable input capture, stage transitions, context manifests, event ordering, failure handling, remediation attempts, and closure.
+
+Stage agents are not direct entrypoints.
+
+## Quick start with Claude Code
+
+1. Produce a plan in Plan mode.
+2. Invoke `ai-pipeline-rgr-orchestrator` with the task fields and the exact Plan handoff.
+3. Inspect `docs/agent/runs/{story_id}/quality-gates.md` and `convergence-report.json`.
+4. Validate the bundle:
+
+```bash
+python3 scripts/validate-run-bundle.py docs/agent/runs/{story_id}
+```
+
+The worktree remains under `.agent-runs/{story_id}` for human review. The pipeline never auto-merges, auto-deploys, or deletes evidence.
+
+## Core run artifacts
 
 ```text
-Start a run for this task and execute the full pipeline.
-
-story_id: <same-story-id>
-input_source: <same-input-source>
-stack: <same-target-stack>
-project_root: <same-project-root>
-
-Plan handoff:
-<paste plan output exactly as-is>
-
-Raw handoff:
-- <same intent point 1>
-- <same intent point 2>
+docs/agent/runs/{story_id}/
+├── run-context.md
+├── plan-input.md
+├── repository-intelligence.json
+├── repository-intelligence.md
+├── brainstorm.md
+├── brainstorm.json
+├── detailed-plan.md
+├── detailed-plan.json
+├── analysis-report.json
+├── analysis-report.md
+├── context-*.json
+├── handoff.md
+├── decision-log.md
+├── events.jsonl
+├── quality-gates.md
+├── quality-gates.json
+├── convergence-report.md
+├── convergence-report.json
+└── error-report.md               # failure only
 ```
 
-Minimum fields to include in both prompts: `story_id`, `input_source`, `stack`, `project_root`, and raw intent points.
+## Design boundaries
 
-## Repository layout
+This repository stays lightweight and local. It does not implement authentication, multi-tenancy, billing, remote scheduling, credential custody, hosted sandboxes, or product UI. Those belong in Rigor Route.
 
-```
-.claude/
-└── agents/               # Claude Code sub-agent definitions (orchestrator + stages)
+The local pipeline is the usable reference implementation and proving ground for the protocol Rigor Route will later execute as a governed platform.
 
-docs/
-├── agent/
-│   ├── README.md                 # Runtime-doc rules
-│   ├── current-run.md            # Active run pointer
-│   ├── decision-index.md         # Compact index of closed runs
-│   ├── learnings.md              # Cross-task operational learnings (scope_tags filtered)
-│   ├── runtime-doc-contract.yaml # Formal runtime-document contract
-│   ├── runs/{story_id}/          # Per-run artifacts (created by orchestrator)
-│   └── templates/                # Canonical templates for all run docs
-├── conventions/          # Stack-specific conventions (currently backend/Java)
-└── skills/               # Reusable capabilities (DB, API, security, cleanup, RAG, …)
+## Key principles
 
-scripts/
-└── rag-search.sh         # Wrapper for the OpenSearch RAG with fallback semantics
+1. Immutable intent before implementation.
+2. Repository comprehension before writes.
+3. Tests as executable specification.
+4. Explicit artifacts instead of hidden context.
+5. Independent review instead of self-verification.
+6. Deterministic gates remain authoritative over model judgement.
+7. Bounded retries and remediation—never invisible loops.
+8. Repository content is untrusted and cannot widen authority.
+9. Operational learnings are scoped, evidenced, and curated.
+10. Human review owns merge and deployment decisions.
 
-CLAUDE.md                 # Claude Code operating guide (auto-loaded)
-AGENTS.md                 # Design principles + agent/skill catalog
-README.md                 # This file
-```
+## Reference
 
-## Key design principles
-
-1. **Task-first delivery** — one unit of work at a time, deployable slice.
-2. **Spec refinement before planning** — intent → declarative success criteria, ambiguity killed at brainstorm.
-3. **Deterministic TDD+ flow** — no stage skipping, no silent pass-through.
-4. **Tests as executable specification** — RED tests are the goal state GREEN loops against.
-5. **Comprehension before action** — read-before-write, search-before-create, match-neighbors.
-6. **Rule of Three** — no abstraction before 3 concrete callers.
-7. **Explicit handoff over hidden context** — every stage leaves comprehension evidence + self-check in `handoff.md`.
-8. **Operational memory as a product asset** — `learnings.md` with scope-tag filtering.
-9. **Auditability + safety** — append-only decision log, worktree isolation, hard quality gate.
-
-Full detail lives in `AGENTS.md`.
-
-## Runtime documents
-
-Every run produces a consistent set of documents in `docs/agent/runs/{story_id}/`:
-
-| File | Mutation policy |
-| --- | --- |
-| `run-context.md` | replace-in-place |
-| `plan-input.md` | write-once |
-| `brainstorm.md` | write-once (locked before RED) |
-| `detailed-plan.md` | replace-in-place pre-RED; locked once RED starts |
-| `handoff.md` | append-only (one section per stage) |
-| `decision-log.md` | append-only, timestamped, `[UNCERTAIN]` tag for assumptions |
-| `quality-gates.md` | replace-in-place |
-| `error-report.md` | create-on-failure only |
-
-See `docs/agent/runtime-doc-contract.yaml` for the formal spec.
-
-## Learnings register
-
-`docs/agent/learnings.md` is the single cross-task memory, organized by a `scope_tags` vocabulary (stack, environment, tooling, infrastructure, domain, practice). Agents filter by tags matching the current task — reading everything is noise.
-
-Entries move through `candidate → active → deprecated / conflicted`. The quality gate curates.
-
-## External references
-
-Design inspired by and partially aligned with:
-- [obra/superpowers](https://github.com/obra/superpowers) — brainstorming, worktree isolation, numbered micro-task plans.
-- [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) — goal-driven execution, simplicity, surgical changes.
-
-See `docs/agent/evaluation-superpowers-karpathy.md` for the full mapping.
-
-## Status
-
-Pipeline is stack-agnostic and ready to run against any unit of work with an identifier and intent payload. Backend/Java is the reference stack — other stacks follow the same flow with idiomatic substitutions (see the stack mapping tables in `docs/skills/skill-project-scaffold.md`).
+- Agent and skill model: `AGENTS.md`
+- Claude Code operating rules: `CLAUDE.md`
+- Runtime contract: `docs/agent/runtime-doc-contract.yaml`
+- Artifact schemas: `docs/agent/schemas/`
+- Evaluation corpus: `docs/agent/evaluation-corpus.yaml`
