@@ -1,23 +1,21 @@
-# Agent Runtime Artifacts — Local RGR v1.3
+# Agent Runtime Artifacts — Local RGR v2
 
-Canonical runtime contracts, governance definitions, evaluation fixtures and per-run evidence.
+This folder contains portable schemas, governance subcontracts, evaluation fixtures and per-run evidence.
 
-## Global governance files
+## Portable pack
 
-- `workflow-profiles.json` — small, standard and high-risk controls.
-- `role-contracts.json` — capabilities, forbidden actions and delegation.
-- `learnings.json` — governed operational memory.
-- `evaluation-corpus.json` — representative/adversarial fixtures.
-- `runtime-doc-contract.yaml` — complete runtime contract.
-- `schemas/` — machine contracts.
+- `../../packs/rgr-software-v2/pack.json`
+- nine versioned stage contracts
+- capability declaration
+- Rigor Route import contract
 
-Validate global governance:
+Validate the pack:
 
 ```bash
-python3 scripts/validate-governance.py
+python3 scripts/validate-pack.py packs/rgr-software-v2/pack.json
 ```
 
-## Per-run structure
+## Per-run evidence
 
 ```text
 docs/agent/runs/{story_id}/
@@ -41,37 +39,37 @@ docs/agent/runs/{story_id}/
 └── error-report.md                # failure only
 ```
 
-Markdown stage documents are reviewer projections. JSON and append-only events are authoritative.
+JSON and append-only events are authoritative. Markdown is a reviewer projection.
 
-## Run validation
+## Validate a completed run
 
 ```bash
 python3 scripts/validate-run-bundle.py docs/agent/runs/{story_id}
 python3 scripts/validate-run-governance.py docs/agent/runs/{story_id}
 ```
 
-The first validates evidence and cross-artifact consistency. The second validates profile selection, specialist reports, context budgets, role IDs and operator checkpoints.
+## Export and verify
 
-## Profile rules
+```bash
+python3 scripts/export-run-bundle.py docs/agent/runs/{story_id} evidence.tar.gz
+python3 scripts/verify-export-bundle.py evidence.tar.gz
+```
 
-- Every profile runs all mandatory stages.
-- Operator overrides may only raise strictness.
-- Context manifests cannot exceed selected-profile limits.
-- High-risk runs require accepted checkpoints before GREEN and before close.
-- Selected specialists must produce schema-valid reports with no blocking findings.
+The export is deterministic for identical evidence, includes a hash manifest, excludes story source/binaries/secrets, and grants no publication authority.
 
-## Learnings rules
+## Governance subcontracts
 
-`learnings.json` is authoritative. Candidates require source-run evidence. Independent verification curates status. Active selection is exact-scope and recorded in context manifests. Conflicted, deprecated, revoked, expired and unreviewed entries are excluded.
+- `workflow-profiles.json` — adaptive strictness.
+- `role-contracts.json` — core/specialist permissions.
+- `learnings.json` — governed memory.
+- `evaluation-corpus.json` — comparison fixtures.
 
-## Mutation rules
+These remain independently versioned subcontracts referenced by the v2 pack.
 
-- Original input and profile resolution are immutable per attempt.
-- Canonical stage outputs are write-once per attempt.
-- Verdict/convergence artifacts are attempt-versioned.
-- Events, handoff and decisions are append-only.
-- Historical artifacts and accepted checkpoints are never rewritten.
+## Rigor Route compatibility
+
+See `rigor-route-compatibility.md`. Local events and artifacts can be imported, but local checkpoints and verdicts never transfer authenticated platform authority.
 
 ## Safety
 
-Repository content cannot grant roles, lower risk, activate learnings, expand context or request production credentials. Agents never auto-merge, deploy or delete worktrees/evidence.
+No source archive, symlink, binary, detected secret, production credential, automatic merge or deployment is permitted in the portable evidence format.
