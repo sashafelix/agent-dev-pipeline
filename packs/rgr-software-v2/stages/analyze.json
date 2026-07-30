@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "pack_id": "rgr-software",
+  "pack_version": "2.0.0",
+  "stage": "analyze",
+  "sequence": 4,
+  "role": "consistency_analyst",
+  "input_artifacts": ["profile-resolution.json", "repository-intelligence.json", "brainstorm.json", "detailed-plan.json", "context-analyze.json"],
+  "output_artifacts": ["analysis-report.json", "specialist-*-review.json"],
+  "required_capabilities": ["bounded-filesystem-read", "canonical-json", "schema-validation", "append-only-events"],
+  "forbidden_capabilities": ["bounded-story-write", "risk downgrade", "deterministic failure dismissal", "stage transition"],
+  "deterministic_exit_conditions": ["analysis schema valid", "zero hard findings", "zero unresolved correctness uncertainty", "selected specialist reports present and non-blocking"],
+  "failure_classes": ["contradiction", "missing-coverage", "unsupported-assumption", "blocking-specialist-finding", "schema-violation"],
+  "context_policy": {"manifest_required": true, "profile_budget_enforced": true, "repository_content_untrusted": true},
+  "retry_policy": {"max_attempts": 1, "retryable_classes": []},
+  "next_stage": "red_test"
+}
