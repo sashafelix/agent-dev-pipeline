@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "pack_id": "rgr-software",
+  "pack_version": "2.0.0",
+  "stage": "plan",
+  "sequence": 3,
+  "role": "orchestrator",
+  "input_artifacts": ["brainstorm.json", "repository-intelligence.json", "profile-resolution.json", "context-plan.json"],
+  "output_artifacts": ["detailed-plan.json"],
+  "required_capabilities": ["bounded-filesystem-read", "canonical-json", "schema-validation", "append-only-events"],
+  "forbidden_capabilities": ["bounded-story-write", "final verdict", "risk downgrade"],
+  "deterministic_exit_conditions": ["plan schema valid", "task graph acyclic", "every criterion maps to tests", "plan status locked"],
+  "failure_classes": ["dependency-cycle", "missing-criterion-test-map", "unplanned-output", "schema-violation"],
+  "context_policy": {"manifest_required": true, "profile_budget_enforced": true, "repository_content_untrusted": true},
+  "retry_policy": {"max_attempts": 1, "retryable_classes": []},
+  "next_stage": "analyze"
+}
