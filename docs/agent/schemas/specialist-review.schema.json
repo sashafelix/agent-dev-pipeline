@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-dev-pipeline.local/schemas/specialist-review.schema.json",
+  "title": "Governed Specialist Review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "story_id", "role", "reviewer_identity", "status", "findings", "evidence_refs"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0"},
+    "story_id": {"type": "string", "minLength": 1},
+    "role": {"type": "string", "enum": ["risk_reviewer", "threat_modeler", "migration_reviewer", "infrastructure_reviewer", "contract_reviewer", "accessibility_reviewer"]},
+    "reviewer_identity": {"type": "string", "minLength": 1},
+    "status": {"type": "string", "enum": ["PASS", "WARN", "FAIL"]},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "message", "evidence_refs"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "severity": {"type": "string", "enum": ["info", "warning", "blocking"]},
+          "message": {"type": "string", "minLength": 1},
+          "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+        }
+      }
+    },
+    "evidence_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  }
+}
