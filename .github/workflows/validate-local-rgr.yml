@@ -24,7 +24,11 @@ jobs:
             scripts/evaluate-corpus.py \
             scripts/resolve-profile.py \
             scripts/validate-governance.py \
-            scripts/validate-run-governance.py
+            scripts/validate-run-governance.py \
+            scripts/validate-pack.py \
+            scripts/export-run-bundle.py \
+            scripts/verify-export-bundle.py \
+            scripts/generate-contract-fixture.py
       - name: Parse all published schemas
         run: |
           python - <<'PY'
@@ -38,10 +42,12 @@ jobs:
               assert schema.get('$id'), f'{path}: missing $id'
               print(f'parsed {path}')
           PY
-      - name: Validate governance contracts
-        run: python scripts/validate-governance.py
-      - name: Validate canonical evaluation corpus
-        run: python scripts/evaluate-corpus.py
+      - name: Validate governance contracts and evaluation corpus
+        run: |
+          python scripts/validate-governance.py
+          python scripts/evaluate-corpus.py
+      - name: Validate portable v2 pack
+        run: python scripts/validate-pack.py packs/rgr-software-v2/pack.json --hash-report /tmp/pack-hashes.json
       - name: Exercise deterministic profile resolution
         run: |
           cat > /tmp/small.json <<'JSON'
@@ -74,3 +80,24 @@ jobs:
           assert validate_instance({'item': 'ok', 'extra': True}, schema)
           print('schema validator reference, positive and negative paths passed')
           PY
+      - name: Generate and validate complete run fixture
+        run: |
+          python scripts/generate-contract-fixture.py /tmp/local-rgr-run
+          python scripts/validate-run-bundle.py /tmp/local-rgr-run
+          python scripts/validate-run-governance.py /tmp/local-rgr-run
+      - name: Export deterministically and verify archive
+        run: |
+          python scripts/export-run-bundle.py /tmp/local-rgr-run /tmp/evidence-a.tar.gz --manifest-out /tmp/export-manifest.json
+          python scripts/export-run-bundle.py /tmp/local-rgr-run /tmp/evidence-b.tar.gz
+          cmp /tmp/evidence-a.tar.gz /tmp/evidence-b.tar.gz
+          python scripts/verify-export-bundle.py /tmp/evidence-a.tar.gz
+      - name: Reject tampered evidence archive
+        run: |
+          mkdir -p /tmp/tampered
+          tar -xzf /tmp/evidence-a.tar.gz -C /tmp/tampered
+          printf '\ntampered\n' >> /tmp/tampered/quality-gates.json
+          tar -czf /tmp/tampered.tar.gz -C /tmp/tampered .
+          if python scripts/verify-export-bundle.py /tmp/tampered.tar.gz; then
+            echo 'tampered archive unexpectedly passed' >&2
+            exit 1
+          fi
