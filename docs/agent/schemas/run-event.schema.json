@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://rigorroute.com/schemas/agent-dev-pipeline/run-event.v1.json",
+  "$id": "https://agent-dev-pipeline.local/schemas/run-event.schema.json",
   "title": "RunEvent",
   "type": "object",
   "additionalProperties": false,
@@ -12,8 +12,8 @@
     "story_id": {"type": "string", "minLength": 1},
     "attempt": {"type": "integer", "minimum": 1},
     "stage": {"type": "string", "enum": ["setup", "prepare", "brainstorm", "plan", "analyze", "red_test", "green_code", "refactor", "quality_gate", "converge", "close"]},
-    "event_type": {"type": "string", "enum": ["run.created", "stage.started", "stage.completed", "stage.failed", "artifact.created", "command.started", "command.completed", "decision.recorded", "attempt.started", "run.completed", "run.failed"]},
-    "actor_role": {"type": "string", "enum": ["orchestrator", "preparer", "specifier", "planner", "analyzer", "test_author", "implementer", "refactorer", "independent_verifier", "convergence_reviewer", "operator"]},
+    "event_type": {"type": "string", "enum": ["run.created", "profile.resolved", "checkpoint.requested", "checkpoint.accepted", "stage.started", "stage.completed", "stage.failed", "artifact.created", "command.started", "command.completed", "decision.recorded", "attempt.started", "run.completed", "run.failed"]},
+    "actor_role": {"type": "string", "enum": ["orchestrator", "repository_analyst", "specifier", "planner", "consistency_analyst", "test_author", "implementer", "refactorer", "independent_verifier", "convergence_reviewer", "risk_reviewer", "threat_modeler", "migration_reviewer", "infrastructure_reviewer", "contract_reviewer", "accessibility_reviewer", "operator"]},
     "outcome": {"type": ["string", "null"], "enum": ["PASS", "WARN", "FAIL", "CONVERGED", "REMEDIATE", null]},
     "causation_sequence": {"type": ["integer", "null"], "minimum": 1},
     "correlation_id": {"type": ["string", "null"]},
