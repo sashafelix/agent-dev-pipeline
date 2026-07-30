@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "pack_id": "rgr-software",
+  "pack_version": "2.0.0",
+  "stage": "quality_gate",
+  "sequence": 8,
+  "role": "independent_verifier",
+  "input_artifacts": ["profile-resolution.json", "repository-intelligence.json", "brainstorm.json", "detailed-plan.json", "analysis-report.json", "red-result.json", "green-result.json", "refactor-result.json", "specialist-*-review.json", "context-quality_gate.json"],
+  "output_artifacts": ["quality-gates.json"],
+  "required_capabilities": ["bounded-filesystem-read", "command-execution", "canonical-json", "schema-validation", "append-only-events"],
+  "forbidden_capabilities": ["bounded-story-write", "self verification", "automatic merge", "automatic deployment", "risk downgrade"],
+  "deterministic_exit_conditions": ["quality gate schema valid", "reviewer identity differs from implementer", "every criterion independently verified", "no unaccepted hard failure"],
+  "failure_classes": ["missing-evidence", "fabricated-evidence", "verification-failure", "role-collision", "blocking-specialist-finding", "schema-violation"],
+  "context_policy": {"manifest_required": true, "profile_budget_enforced": true, "repository_content_untrusted": true},
+  "retry_policy": {"max_attempts": 1, "retryable_classes": ["transient-tooling", "flaky-container-startup"]},
+  "next_stage": "converge"
+}
