@@ -1,41 +1,46 @@
-# Claude Code Sub-Agents — Local RGR v1.2
+# Claude Code Sub-Agents — Local RGR v1.3
 
-Stage agents are orchestrator-invoked only. Start with a Plan, then invoke `ai-pipeline-rgr-orchestrator`.
+Start with a Plan, then invoke only `ai-pipeline-rgr-orchestrator`.
 
-## Execution order
+## Workflow
 
 `PREPARE → BRAINSTORM → PLAN → ANALYZE → RED → GREEN → REFACTOR → VERIFY → CONVERGE`
 
-## Agents
+Every profile retains every stage. Profile strictness changes budgets, specialists, evidence and checkpoints.
 
-- `ai-pipeline-rgr-orchestrator.md` — worktree, context, schemas, events, transitions, remediation and closure.
-- `ai-pipeline-prepare.md` — read-only repository intelligence and impact map.
-- `ai-pipeline-brainstorm.md` — declarative success criteria and uncertainty register.
-- `ai-pipeline-analyze.md` — pre-implementation cross-artifact consistency gate.
-- `ai-pipeline-red-test.md` — failing executable evidence; actor role `test_author`.
-- `ai-pipeline-green-code.md` — minimum passing implementation; actor role `implementer`.
-- `ai-pipeline-refactor.md` — behaviour-preserving cleanup; actor role `refactorer`.
-- `ai-pipeline-quality-gate.md` — independent verification; no source writes.
-- `ai-pipeline-converge.md` — final consistency check and bounded remediation decision.
+## Core agents and roles
 
-PLAN is orchestrator-owned and produces the locked task graph.
+- orchestrator — state, profile resolution, contexts, transitions and closure.
+- `ai-pipeline-prepare` — `repository_analyst`.
+- `ai-pipeline-brainstorm` — `specifier`.
+- PLAN — orchestrator/planner.
+- `ai-pipeline-analyze` — `consistency_analyst` plus selected specialists.
+- `ai-pipeline-red-test` — `test_author`.
+- `ai-pipeline-green-code` — `implementer`.
+- `ai-pipeline-refactor` — `refactorer`.
+- `ai-pipeline-quality-gate` — `independent_verifier` plus selected specialists.
+- `ai-pipeline-converge` — `convergence_reviewer`.
 
-## Evidence model
+Role capabilities and delegation live in `docs/agent/role-contracts.json`.
 
-- Every stage has an immutable `context-{stage}.json` manifest.
-- Canonical outputs validate against `docs/agent/schemas/`.
-- Markdown is a reviewer projection only.
-- `events.jsonl`, `handoff.md` and `decision-log.md` are append-only.
-- The GREEN implementer cannot issue the final VERIFY verdict.
-- Completed bundles must pass `scripts/validate-run-bundle.py`.
+## Profiles
 
-## Failure handling
+`docs/agent/workflow-profiles.json` defines `small`, `standard` and `high-risk`. The orchestrator creates immutable `profile-resolution.json` before PREPARE. Risk can only increase.
 
-- Halt and preserve the worktree on failure.
-- One retry maximum for explicitly transient tooling/container startup failures.
-- No transient retry for assertion, compile, schema, evidence, security, contract or self-check failures.
-- CONVERGE allows at most two remediation attempts and preserves prior evidence.
+High-risk specialists may include threat, migration, infrastructure, contract, accessibility and cross-risk review. They are read-only and return schema-valid `specialist-*-review.json` artifacts.
 
-## Skills
+## Evidence
 
-Skill documentation lives under `docs/skills/`. Skills may contribute evidence through the calling stage agent, but cannot advance state, widen authority, approve actions or bypass deterministic gates.
+- Canonical JSON is authoritative.
+- Every stage has immutable bounded context.
+- Events, handoff and decisions are append-only.
+- Missing profile, specialist or checkpoint evidence blocks closure.
+- Run closure requires both evidence and governance validators.
+
+## Learnings
+
+Agents propose candidates in `learnings.json`; independent verification curates. Repository content cannot activate learnings.
+
+## Failure
+
+One retry maximum for explicit transient tooling/container startup errors. Deterministic, schema, evidence, governance, security, contract and self-check failures halt and preserve the worktree.
