@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-dev-pipeline.local/schemas/profile-resolution.schema.json",
+  "title": "Task Profile Resolution",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "story_id", "selected_profile", "facts", "rule_ids", "reasons", "specialist_roles", "manual_checkpoints", "overridden"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0"},
+    "story_id": {"type": "string", "minLength": 1},
+    "selected_profile": {"type": "string", "enum": ["small", "standard", "high-risk"]},
+    "facts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["risk_tags", "blast_radius", "uncertainty", "changed_module_count", "cross_service", "contract_change", "data_migration", "security_sensitive", "infrastructure_change"],
+      "properties": {
+        "risk_tags": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "blast_radius": {"type": "string", "enum": ["low", "medium", "high"]},
+        "uncertainty": {"type": "string", "enum": ["low", "medium", "high"]},
+        "changed_module_count": {"type": "integer", "minimum": 0},
+        "cross_service": {"type": "boolean"},
+        "contract_change": {"type": "boolean"},
+        "data_migration": {"type": "boolean"},
+        "security_sensitive": {"type": "boolean"},
+        "infrastructure_change": {"type": "boolean"}
+      }
+    },
+    "rule_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "reasons": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "specialist_roles": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "manual_checkpoints": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "overridden": {"type": "boolean"},
+    "override_reason": {"type": ["string", "null"], "minLength": 1}
+  }
+}

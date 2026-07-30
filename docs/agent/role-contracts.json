@@ -1,0 +1,141 @@
+{
+  "schema_version": "1.0",
+  "contract_version": "local-rgr-v1.3",
+  "roles": [
+    {
+      "id": "orchestrator",
+      "purpose": "Own run state, bounded context, transitions, validation, checkpoints and closure.",
+      "allowed_stages": ["setup", "prepare", "brainstorm", "plan", "analyze", "red_test", "green_code", "refactor", "quality_gate", "converge", "close"],
+      "capabilities": ["repository_read", "command_execute", "checkpoint_request"],
+      "forbidden_capabilities": ["story source implementation", "final independent verdict", "automatic merge", "automatic deployment"],
+      "may_delegate_to": ["repository_analyst", "specifier", "consistency_analyst", "test_author", "implementer", "refactorer", "independent_verifier", "convergence_reviewer", "risk_reviewer", "threat_modeler", "migration_reviewer", "infrastructure_reviewer", "contract_reviewer", "accessibility_reviewer"],
+      "canonical_outputs": ["profile-resolution.json", "detailed-plan.json", "context-{stage}.json", "events.jsonl"]
+    },
+    {
+      "id": "repository_analyst",
+      "purpose": "Inspect an exact repository revision without changing story source.",
+      "allowed_stages": ["prepare"],
+      "capabilities": ["repository_read", "command_execute", "learning_propose"],
+      "forbidden_capabilities": ["test write", "source write", "verdict", "stage transition"],
+      "may_delegate_to": [],
+      "canonical_outputs": ["repository-intelligence.json"]
+    },
+    {
+      "id": "specifier",
+      "purpose": "Turn task intent into observable criteria and explicit uncertainty.",
+      "allowed_stages": ["brainstorm"],
+      "capabilities": ["repository_read", "network_read", "learning_propose"],
+      "forbidden_capabilities": ["test write", "source write", "verdict", "stage transition"],
+      "may_delegate_to": [],
+      "canonical_outputs": ["brainstorm.json"]
+    },
+    {
+      "id": "consistency_analyst",
+      "purpose": "Detect contradictions, missing coverage and unsupported plans before implementation.",
+      "allowed_stages": ["analyze"],
+      "capabilities": ["repository_read", "command_execute"],
+      "forbidden_capabilities": ["test write", "source write", "risk downgrade", "stage transition"],
+      "may_delegate_to": [],
+      "canonical_outputs": ["analysis-report.json"]
+    },
+    {
+      "id": "test_author",
+      "purpose": "Create intentionally failing executable evidence for locked criteria.",
+      "allowed_stages": ["red_test"],
+      "capabilities": ["repository_read", "test_write", "command_execute", "learning_propose"],
+      "forbidden_capabilities": ["production source write", "final verdict", "stage transition"],
+      "may_delegate_to": [],
+      "canonical_outputs": ["red-result.json"]
+    },
+    {
+      "id": "implementer",
+      "purpose": "Make the minimum authorised production change required by RED evidence.",
+      "allowed_stages": ["green_code"],
+      "capabilities": ["repository_read", "source_write", "config_write", "migration_write", "command_execute", "learning_propose"],
+      "forbidden_capabilities": ["final verdict", "self approval", "stage transition", "automatic publication"],
+      "may_delegate_to": [],
+      "canonical_outputs": ["green-result.json"]
+    },
+    {
+      "id": "refactorer",
+      "purpose": "Improve maintainability while preserving verified behaviour and scope.",
+      "allowed_stages": ["refactor"],
+      "capabilities": ["repository_read", "source_write", "test_write", "config_write", "command_execute", "learning_propose"],
+      "forbidden_capabilities": ["new feature behaviour", "test expectation drift", "final verdict", "stage transition"],
+      "may_delegate_to": [],
+      "canonical_outputs": ["refactor-result.json"]
+    },
+    {
+      "id": "independent_verifier",
+      "purpose": "Independently verify criteria, diff and executed evidence without source writes.",
+      "allowed_stages": ["quality_gate"],
+      "capabilities": ["repository_read", "command_execute", "learning_curate", "verdict_issue", "checkpoint_request"],
+      "forbidden_capabilities": ["source write", "test expectation write", "self verification", "automatic merge", "automatic deployment"],
+      "may_delegate_to": ["risk_reviewer", "threat_modeler", "migration_reviewer", "infrastructure_reviewer", "contract_reviewer", "accessibility_reviewer"],
+      "canonical_outputs": ["quality-gates.json"]
+    },
+    {
+      "id": "convergence_reviewer",
+      "purpose": "Compare locked intent, execution evidence, diff and verdict for final consistency.",
+      "allowed_stages": ["converge"],
+      "capabilities": ["repository_read", "verdict_issue", "checkpoint_request"],
+      "forbidden_capabilities": ["source write", "test write", "risk downgrade", "unbounded remediation"],
+      "may_delegate_to": [],
+      "canonical_outputs": ["convergence-report.json"]
+    },
+    {
+      "id": "risk_reviewer",
+      "purpose": "Review cross-cutting high-risk evidence without modifying implementation.",
+      "allowed_stages": ["analyze", "quality_gate", "converge"],
+      "capabilities": ["repository_read", "command_execute", "verdict_issue"],
+      "forbidden_capabilities": ["source write", "test write", "stage transition", "final owner approval"],
+      "may_delegate_to": [],
+      "canonical_outputs": ["specialist-risk-review.json"]
+    },
+    {
+      "id": "threat_modeler",
+      "purpose": "Review trust boundaries, abuse cases and positive and negative security evidence.",
+      "allowed_stages": ["analyze", "quality_gate"],
+      "capabilities": ["repository_read", "command_execute", "verdict_issue"],
+      "forbidden_capabilities": ["source write", "secret access", "stage transition", "risk downgrade"],
+      "may_delegate_to": [],
+      "canonical_outputs": ["specialist-threat-review.json"]
+    },
+    {
+      "id": "migration_reviewer",
+      "purpose": "Review schema compatibility, data safety and rollback or forward-fix evidence.",
+      "allowed_stages": ["analyze", "quality_gate"],
+      "capabilities": ["repository_read", "command_execute", "verdict_issue"],
+      "forbidden_capabilities": ["migration write", "production database access", "stage transition"],
+      "may_delegate_to": [],
+      "canonical_outputs": ["specialist-migration-review.json"]
+    },
+    {
+      "id": "infrastructure_reviewer",
+      "purpose": "Review infrastructure validation, containment, blast radius and rollback evidence.",
+      "allowed_stages": ["analyze", "quality_gate"],
+      "capabilities": ["repository_read", "command_execute", "verdict_issue"],
+      "forbidden_capabilities": ["config write", "production credentials", "deployment", "stage transition"],
+      "may_delegate_to": [],
+      "canonical_outputs": ["specialist-infrastructure-review.json"]
+    },
+    {
+      "id": "contract_reviewer",
+      "purpose": "Review API, event, configuration and compatibility evidence without implementation authority.",
+      "allowed_stages": ["analyze", "quality_gate"],
+      "capabilities": ["repository_read", "command_execute", "verdict_issue"],
+      "forbidden_capabilities": ["source write", "contract mutation", "stage transition"],
+      "may_delegate_to": [],
+      "canonical_outputs": ["specialist-contract-review.json"]
+    },
+    {
+      "id": "accessibility_reviewer",
+      "purpose": "Review accessibility criteria and evidence independently of implementation.",
+      "allowed_stages": ["analyze", "quality_gate"],
+      "capabilities": ["repository_read", "command_execute", "verdict_issue"],
+      "forbidden_capabilities": ["source write", "test expectation write", "stage transition"],
+      "may_delegate_to": [],
+      "canonical_outputs": ["specialist-accessibility-review.json"]
+    }
+  ]
+}

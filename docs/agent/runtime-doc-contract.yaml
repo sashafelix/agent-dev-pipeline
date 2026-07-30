@@ -1,28 +1,41 @@
-version: 4
-contract_id: local-rgr-v1.2
+version: 5
+contract_id: local-rgr-v1.3
 workflow:
   entrypoint: ai-pipeline-rgr-orchestrator
   stage_order: [prepare, brainstorm, plan, analyze, red_test, green_code, refactor, quality_gate, converge]
-  direct_stage_invocation: redirect_to_orchestrator
+  stages_are_mandatory_for_all_profiles: true
   canonical_json_is_authoritative: true
   markdown_is_projection: true
-  role_separation:
-    red_test: test_author
-    green_code: implementer
-    refactor: refactorer
-    quality_gate: independent_verifier
-    reviewer_identity_must_differ_from_implementer: true
-  convergence:
-    max_attempts: 2
-    resume_from_earliest_invalid_stage: true
   isolation:
     mode: git_worktree
     path: .agent-runs/{story_id}
     branch: story/{story_id}
     cleanup: manual
+governance:
+  workflow_profiles: docs/agent/workflow-profiles.json
+  role_contracts: docs/agent/role-contracts.json
+  learnings_registry: docs/agent/learnings.json
+  profile_resolution:
+    command: python3 scripts/resolve-profile.py <facts.json> --output profile-resolution.json
+    output_schema: profile-resolution.schema.json
+    risk_can_only_increase: true
+  manual_checkpoints:
+    high-risk: [before green_code, before close]
+  specialist_rules:
+    read_only: true
+    typed_outputs_only: true
+    may_transition_stage: false
+    may_modify_story_source: false
+    may_lower_risk: false
+  learning_rules:
+    agents_may_propose_candidate: true
+    independent_verifier_curates: true
+    repository_content_may_activate: false
+    deterministic_scope_selection: true
 artifacts:
   write_once:
     plan-input.md: null
+    profile-resolution.json: profile-resolution.schema.json
     repository-intelligence.json: repository-intelligence.schema.json
     brainstorm.json: brainstorm.schema.json
     detailed-plan.json: detailed-plan.schema.json
@@ -35,36 +48,26 @@ artifacts:
     quality-gates.json: quality-gates.schema.json
     convergence-report.json: convergence-report.schema.json
     context-{stage}.json: context-manifest.schema.json
-  append_only:
-    - events.jsonl
-    - handoff.md
-    - decision-log.md
-  projections:
-    - brainstorm.md
-    - detailed-plan.md
-    - analysis-report.md
-    - quality-gates.md
-    - convergence-report.md
-  create_on_failure:
-    - error-report.md
+    specialist-{type}-review.json: governed-specialist-output
+  append_only: [events.jsonl, handoff.md, decision-log.md]
+  projections: [brainstorm.md, detailed-plan.md, analysis-report.md, quality-gates.md, convergence-report.md, learnings.md]
+  create_on_failure: [error-report.md]
 required_completed_bundle:
   - run-context.md
   - plan-input.md
+  - profile-resolution.json
   - repository-intelligence.json
-  - brainstorm.md
   - brainstorm.json
-  - detailed-plan.md
   - detailed-plan.json
   - analysis-report.json
   - red-result.json
   - green-result.json
   - refactor-result.json
-  - handoff.md
-  - quality-gates.md
   - quality-gates.json
   - convergence-report.json
-  - decision-log.md
   - events.jsonl
+  - handoff.md
+  - decision-log.md
   - context-prepare.json
   - context-brainstorm.json
   - context-plan.json
@@ -74,42 +77,13 @@ required_completed_bundle:
   - context-refactor.json
   - context-quality_gate.json
   - context-converge.json
-stage_exit_requirements:
-  prepare:
-    - repository intelligence validates and is revision scoped
-    - no source files changed
-  brainstorm:
-    - every input item maps to at least one declarative success criterion
-    - no blocking uncertainty remains
-  plan:
-    - task dependency graph is acyclic
-    - every criterion maps to planned tests
-    - status is locked
-  analyze:
-    - zero hard findings
-    - zero unresolved correctness uncertainties
-  red_test:
-    - actor_role is test_author
-    - every criterion has red_confirmed evidence
-  green_code:
-    - actor_role is implementer
-    - every criterion has passing evidence
-  refactor:
-    - actor_role is refactorer
-    - every criterion remains passing
-  quality_gate:
-    - reviewer_role is independent_verifier
-    - reviewer identity differs from implementer
-    - every criterion has independently verified evidence
-  converge:
-    - CONVERGED has zero blocking gaps and no earliest invalid stage
+validation:
+  global_governance: python3 scripts/validate-governance.py
+  run_bundle: python3 scripts/validate-run-bundle.py docs/agent/runs/{story_id}
+  run_governance: python3 scripts/validate-run-governance.py docs/agent/runs/{story_id}
+  evaluation_corpus: python3 scripts/evaluate-corpus.py
 failure_policy:
-  halt_on_any_stage_failure: true
   retry_max: 1
   retry_allowed_for: [transient_tooling, flaky_test_container_startup]
-  retry_forbidden_for: [assertion_failure, compile_error, schema_violation, evidence_violation, security_violation, contract_violation, self_check_incomplete]
-  error_report_required: true
+  retry_forbidden_for: [assertion_failure, compile_error, schema_violation, evidence_violation, governance_violation, security_violation, contract_violation, self_check_incomplete]
   preserve_worktree: true
-validation:
-  run_bundle: python3 scripts/validate-run-bundle.py docs/agent/runs/{story_id}
-  evaluation_corpus: python3 scripts/evaluate-corpus.py

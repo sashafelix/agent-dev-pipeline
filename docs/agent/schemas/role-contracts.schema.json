@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-dev-pipeline.local/schemas/role-contracts.schema.json",
+  "title": "Agent Role Contracts",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "contract_version", "roles"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0"},
+    "contract_version": {"type": "string", "minLength": 1},
+    "roles": {
+      "type": "array",
+      "minItems": 9,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "purpose", "allowed_stages", "capabilities", "forbidden_capabilities", "may_delegate_to", "canonical_outputs"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "purpose": {"type": "string", "minLength": 8},
+          "allowed_stages": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "capabilities": {"type": "array", "uniqueItems": true, "items": {"type": "string", "enum": ["repository_read", "test_write", "source_write", "config_write", "migration_write", "command_execute", "network_read", "learning_propose", "learning_curate", "verdict_issue", "checkpoint_request"]}},
+          "forbidden_capabilities": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "may_delegate_to": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "canonical_outputs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+        }
+      }
+    }
+  }
+}
