@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "contract_version": "local-rgr-v1.3",
+  "mandatory_stage_order": ["prepare", "brainstorm", "plan", "analyze", "red_test", "green_code", "refactor", "quality_gate", "converge"],
+  "profiles": [
+    {
+      "id": "small",
+      "rank": 1,
+      "description": "Bounded low-risk change in one module with clear behaviour and no sensitive contract or data impact.",
+      "required_stages": ["prepare", "brainstorm", "plan", "analyze", "red_test", "green_code", "refactor", "quality_gate", "converge"],
+      "specialist_roles": [],
+      "conditional_specialists": {},
+      "manual_checkpoints": [],
+      "budgets": {"max_context_files": 25, "max_context_bytes": 300000, "max_tokens": 60000, "max_convergence_attempts": 1},
+      "evidence_requirements": ["criterion trace", "red-before-green", "affected tests", "independent verification"]
+    },
+    {
+      "id": "standard",
+      "rank": 2,
+      "description": "Normal feature, defect or refactor spanning multiple files or requiring contract and integration awareness.",
+      "required_stages": ["prepare", "brainstorm", "plan", "analyze", "red_test", "green_code", "refactor", "quality_gate", "converge"],
+      "specialist_roles": [],
+      "conditional_specialists": {"breaking-contract": "contract_reviewer", "accessibility": "accessibility_reviewer"},
+      "manual_checkpoints": [],
+      "budgets": {"max_context_files": 60, "max_context_bytes": 1000000, "max_tokens": 140000, "max_convergence_attempts": 2},
+      "evidence_requirements": ["criterion trace", "repository impact map", "red-before-green", "regression suite", "contract evidence when applicable", "independent verification"]
+    },
+    {
+      "id": "high-risk",
+      "rank": 3,
+      "description": "Security, migration, infrastructure, architecture or broad cross-service work requiring stricter review and explicit checkpoints.",
+      "required_stages": ["prepare", "brainstorm", "plan", "analyze", "red_test", "green_code", "refactor", "quality_gate", "converge"],
+      "specialist_roles": ["risk_reviewer"],
+      "conditional_specialists": {
+        "security": "threat_modeler",
+        "domain:auth": "threat_modeler",
+        "pii": "threat_modeler",
+        "migration": "migration_reviewer",
+        "domain:db": "migration_reviewer",
+        "infra": "infrastructure_reviewer",
+        "breaking-contract": "contract_reviewer",
+        "accessibility": "accessibility_reviewer"
+      },
+      "manual_checkpoints": ["before green_code", "before close"],
+      "budgets": {"max_context_files": 120, "max_context_bytes": 3000000, "max_tokens": 300000, "max_convergence_attempts": 2},
+      "evidence_requirements": ["criterion trace", "repository impact map", "threat or migration or infrastructure review as applicable", "positive and negative safety tests", "rollback or forward-fix evidence", "full regression suite", "independent verification", "operator checkpoint evidence"]
+    }
+  ]
+}
