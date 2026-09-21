@@ -4,22 +4,170 @@
   "title": "Local RGR Pack Manifest",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "pack_id", "pack_version", "protocol_version", "name", "description", "entrypoint", "stage_contracts", "profiles_path", "roles_path", "learnings_path", "capabilities_path", "artifact_schemas", "compatibility", "integrity"],
+  "required": [
+    "schema_version",
+    "pack_id",
+    "pack_version",
+    "protocol_version",
+    "name",
+    "description",
+    "entrypoint",
+    "stage_contracts",
+    "profiles_path",
+    "roles_path",
+    "learnings_path",
+    "runtime_routing_path",
+    "capabilities_path",
+    "artifact_schemas",
+    "compatibility",
+    "integrity"
+  ],
   "properties": {
-    "schema_version": {"type": "string", "const": "1.0"},
-    "pack_id": {"type": "string", "pattern": "^[a-z0-9-]+$"},
-    "pack_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
-    "protocol_version": {"type": "string", "minLength": 1},
-    "name": {"type": "string", "minLength": 3},
-    "description": {"type": "string", "minLength": 12},
-    "entrypoint": {"type": "string", "minLength": 1},
-    "stage_contracts": {"type": "array", "minItems": 9, "items": {"type": "object", "additionalProperties": false, "required": ["stage", "path", "sha256"], "properties": {"stage": {"type": "string", "minLength": 1}, "path": {"type": "string", "minLength": 1}, "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}}}},
-    "profiles_path": {"type": "string", "minLength": 1},
-    "roles_path": {"type": "string", "minLength": 1},
-    "learnings_path": {"type": "string", "minLength": 1},
-    "capabilities_path": {"type": "string", "minLength": 1},
-    "artifact_schemas": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
-    "compatibility": {"type": "object", "additionalProperties": false, "required": ["rigor_route_import_contract", "minimum_runtime", "local_execution", "publication_authority"], "properties": {"rigor_route_import_contract": {"type": "string", "minLength": 1}, "minimum_runtime": {"type": "string", "minLength": 1}, "local_execution": {"type": "boolean"}, "publication_authority": {"type": "string", "enum": ["none", "draft_only"]}}},
-    "integrity": {"type": "object", "additionalProperties": false, "required": ["algorithm", "manifest_sha256", "signature"], "properties": {"algorithm": {"type": "string", "const": "sha256"}, "manifest_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}, "signature": {"type": ["string", "null"], "minLength": 1}}}
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "pack_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "pack_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "protocol_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 3
+    },
+    "description": {
+      "type": "string",
+      "minLength": 12
+    },
+    "entrypoint": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stage_contracts": {
+      "type": "array",
+      "minItems": 9,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stage",
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "stage": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "profiles_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "roles_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "learnings_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "capabilities_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_schemas": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rigor_route_import_contract",
+        "minimum_runtime",
+        "local_execution",
+        "publication_authority"
+      ],
+      "properties": {
+        "rigor_route_import_contract": {
+          "type": "string",
+          "minLength": 1
+        },
+        "minimum_runtime": {
+          "type": "string",
+          "minLength": 1
+        },
+        "local_execution": {
+          "type": "boolean"
+        },
+        "publication_authority": {
+          "type": "string",
+          "enum": [
+            "none",
+            "draft_only"
+          ]
+        }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "manifest_sha256",
+        "signature"
+      ],
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "const": "sha256"
+        },
+        "manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "signature": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "runtime_routing_path": {
+      "type": "string",
+      "minLength": 1
+    }
   }
 }
