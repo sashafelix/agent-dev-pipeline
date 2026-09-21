@@ -59,6 +59,7 @@ def validate(pack_path: Path) -> tuple[list[str], dict[str, str]]:
     pack_version = manifest["pack_version"]
     role_doc = load_json(ROOT / manifest["roles_path"])
     role_ids = {role["id"] for role in role_doc["roles"]}
+    role_allowed_stages = {role["id"]: set(role["allowed_stages"]) for role in role_doc["roles"]}
     profiles_doc = load_json(ROOT / manifest["profiles_path"])
     mandatory = profiles_doc["mandatory_stage_order"]
 
@@ -123,6 +124,48 @@ def validate(pack_path: Path) -> tuple[list[str], dict[str, str]]:
             errors.append(f"stage {stage['stage']}: next_stage must be {expected_next!r}")
         if stage["retry_policy"]["max_attempts"] > 2:
             errors.append(f"stage {stage['stage']}: max attempts cannot exceed two")
+
+    routing_path = ROOT / manifest["runtime_routing_path"]
+    routing, routing_errors = validate_doc(routing_path, "runtime-routing.schema.json")
+    errors.extend(routing_errors)
+    if routing.get("pack_id") != pack_id or routing.get("pack_version") != pack_version:
+        errors.append(f"{routing_path}: pack identity/version mismatch")
+    target_ids = [target["id"] for target in routing.get("targets", [])]
+    if len(target_ids) != len(set(target_ids)):
+        errors.append(f"{routing_path}: target ids must be unique")
+    targets_by_id = {target["id"]: target for target in routing.get("targets", [])}
+    route_ids = [route["id"] for route in routing.get("routes", [])]
+    if len(route_ids) != len(set(route_ids)):
+        errors.append(f"{routing_path}: route ids must be unique")
+    exact_routes: set[tuple[str, str]] = set()
+    wildcard_roles: set[str] = set()
+    for route in routing.get("routes", []):
+        role = route["role"]
+        stage = route["stage"]
+        if role not in role_ids:
+            errors.append(f"{routing_path}: route {route['id']} references unknown role {role}")
+            continue
+        if stage == "*":
+            wildcard_roles.add(role)
+        else:
+            exact_routes.add((stage, role))
+            if stage not in role_allowed_stages.get(role, set()):
+                errors.append(f"{routing_path}: role {role} is not allowed in stage {stage}")
+        unknown_targets = set(route["targets"]) - set(target_ids)
+        if unknown_targets:
+            errors.append(f"{routing_path}: route {route['id']} references unknown targets {sorted(unknown_targets)}")
+        required_model = set(route["required_model_capabilities"])
+        for target_id in route["targets"]:
+            target = targets_by_id.get(target_id)
+            if target is None:
+                continue
+            missing = required_model - set(target["capabilities"])
+            if missing:
+                errors.append(f"{routing_path}: route {route['id']} target {target_id} lacks capabilities {sorted(missing)}")
+    for stage in stages:
+        pair = (stage["stage"], stage["role"])
+        if pair not in exact_routes and stage["role"] not in wildcard_roles:
+            errors.append(f"{routing_path}: missing runtime route for stage owner {pair[0]}/{pair[1]}")
 
     for rel_path in manifest["artifact_schemas"]:
         if not (ROOT / rel_path).is_file():
