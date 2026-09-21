@@ -1,17 +1,61 @@
 {
   "schema_version": "1.0",
   "pack_id": "rgr-software",
-  "pack_version": "2.0.0",
+  "pack_version": "2.1.0",
   "stage": "converge",
   "sequence": 9,
   "role": "convergence_reviewer",
-  "input_artifacts": ["profile-resolution.json", "brainstorm.json", "detailed-plan.json", "red-result.json", "green-result.json", "refactor-result.json", "quality-gates.json", "specialist-*-review.json", "context-converge.json"],
-  "output_artifacts": ["convergence-report.json"],
-  "required_capabilities": ["bounded-filesystem-read", "canonical-json", "schema-validation", "append-only-events"],
-  "forbidden_capabilities": ["bounded-story-write", "verdict rewrite", "risk downgrade", "unbounded remediation"],
-  "deterministic_exit_conditions": ["convergence schema valid", "attempt within selected profile budget", "CONVERGED has zero blocking gaps", "required operator checkpoints accepted"],
-  "failure_classes": ["scope-drift", "evidence-drift", "refactor-drift", "checkpoint-missing", "attempt-budget-exceeded", "schema-violation"],
-  "context_policy": {"manifest_required": true, "profile_budget_enforced": true, "repository_content_untrusted": true},
-  "retry_policy": {"max_attempts": 2, "retryable_classes": ["remediation-required"]},
+  "input_artifacts": [
+    "profile-resolution.json",
+    "brainstorm.json",
+    "detailed-plan.json",
+    "red-result.json",
+    "green-result.json",
+    "refactor-result.json",
+    "quality-gates.json",
+    "specialist-*-review.json",
+    "context-converge.json"
+  ],
+  "output_artifacts": [
+    "convergence-report.json"
+  ],
+  "required_capabilities": [
+    "bounded-filesystem-read",
+    "canonical-json",
+    "schema-validation",
+    "append-only-events",
+    "runtime-routing"
+  ],
+  "forbidden_capabilities": [
+    "bounded-story-write",
+    "verdict rewrite",
+    "risk downgrade",
+    "unbounded remediation"
+  ],
+  "deterministic_exit_conditions": [
+    "convergence schema valid",
+    "attempt within selected profile budget",
+    "CONVERGED has zero blocking gaps",
+    "required operator checkpoints accepted"
+  ],
+  "failure_classes": [
+    "scope-drift",
+    "evidence-drift",
+    "refactor-drift",
+    "checkpoint-missing",
+    "attempt-budget-exceeded",
+    "schema-violation"
+  ],
+  "context_policy": {
+    "manifest_required": true,
+    "profile_budget_enforced": true,
+    "repository_content_untrusted": true
+  },
+  "retry_policy": {
+    "max_attempts": 2,
+    "retryable_classes": [
+      "remediation-required"
+    ]
+  },
   "next_stage": null
 }
