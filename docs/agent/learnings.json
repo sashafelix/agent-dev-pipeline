@@ -1,5 +1,6 @@
 {
   "schema_version": "1.0",
-  "contract_version": "local-rgr-v1.3",
-  "entries": []
+  "contract_version": "local-rgr-v2.1",
+  "entries": [],
+  "authority": "advisory"
 }
