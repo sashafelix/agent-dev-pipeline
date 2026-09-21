@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "import_contract": "rigor-route-pack-import-v1",
   "pack_id": "rgr-software",
-  "pack_version": "2.0.0",
+  "pack_version": "2.1.0",
   "accepted_bundle_format": "local-rgr-evidence-bundle/1.0",
   "required_artifacts": [
     "export-manifest.json",
@@ -22,12 +22,41 @@
   "profile_schema": "docs/agent/schemas/profile-resolution.schema.json",
   "role_schema": "docs/agent/schemas/role-contracts.schema.json",
   "translation_rules": [
-    {"local": "events.jsonl", "rigor_route": "canonical run event ledger", "rule": "Preserve sequence, attempt, stage, actor role, correlation, causation and artifact references."},
-    {"local": "canonical JSON artifacts", "rigor_route": "immutable artifact store", "rule": "Store bytes unchanged, verify SHA-256 and retain source path as provenance metadata."},
-    {"local": "profile-resolution.json", "rigor_route": "workflow profile selection evidence", "rule": "Import selected profile and reasons; platform policy may only require a stricter profile."},
-    {"local": "role-contracts.json actor roles", "rigor_route": "model/tool invocation role", "rule": "Map exact role IDs and intersect permissions with platform/workspace/repository policy."},
-    {"local": "operator checkpoints", "rigor_route": "authenticated approval decisions", "rule": "Local checkpoint evidence is historical only and never grants new platform authority."},
-    {"local": "quality-gates.json and convergence-report.json", "rigor_route": "review and convergence projections", "rule": "Import verdicts as evidence; Rigor Route independently validates before publication."}
+    {
+      "local": "events.jsonl",
+      "rigor_route": "canonical run event ledger",
+      "rule": "Preserve sequence, attempt, stage, actor role, correlation, causation and artifact references."
+    },
+    {
+      "local": "canonical JSON artifacts",
+      "rigor_route": "immutable artifact store",
+      "rule": "Store bytes unchanged, verify SHA-256 and retain source path as provenance metadata."
+    },
+    {
+      "local": "profile-resolution.json",
+      "rigor_route": "workflow profile selection evidence",
+      "rule": "Import selected profile and reasons; platform policy may only require a stricter profile."
+    },
+    {
+      "local": "role-contracts.json actor roles",
+      "rigor_route": "model/tool invocation role",
+      "rule": "Map exact role IDs and intersect permissions with platform/workspace/repository policy."
+    },
+    {
+      "local": "operator checkpoints",
+      "rigor_route": "authenticated approval decisions",
+      "rule": "Local checkpoint evidence is historical only and never grants new platform authority."
+    },
+    {
+      "local": "quality-gates.json and convergence-report.json",
+      "rigor_route": "review and convergence projections",
+      "rule": "Import verdicts as evidence; Rigor Route independently validates before publication."
+    },
+    {
+      "local": "runtime.selected/runtime.fallback/runtime.completed events",
+      "rigor_route": "model runtime provenance and usage evidence",
+      "rule": "Preserve selected target, adapter/model reference, locality, fallback reason and safe usage metrics; never treat local model choice as platform authority."
+    }
   ],
   "publication_mode": "none"
 }
