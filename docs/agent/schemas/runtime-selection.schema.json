@@ -1,0 +1,26 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://agent-dev-pipeline.local/schemas/runtime-selection.schema.json",
+  "title":"RuntimeSelection",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["schema_version","stage","role","route_id","target_id","adapter","model_ref","endpoint_ref","locality","cost_class","required_model_capabilities","available_targets","overlay_applied","fallback","selection_reason","fallback_reason"],
+  "properties":{
+    "schema_version":{"type":"string","const":"1.0"},
+    "stage":{"type":"string","enum":["prepare","brainstorm","plan","analyze","red_test","green_code","refactor","quality_gate","converge"]},
+    "role":{"type":"string","minLength":1},
+    "route_id":{"type":"string","minLength":1},
+    "target_id":{"type":"string","minLength":1},
+    "adapter":{"type":"string","minLength":1},
+    "model_ref":{"type":"string","minLength":1},
+    "endpoint_ref":{"type":["string","null"],"minLength":1},
+    "locality":{"type":"string","enum":["local","external"]},
+    "cost_class":{"type":"string","enum":["local","metered","frontier"]},
+    "required_model_capabilities":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},
+    "available_targets":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},
+    "overlay_applied":{"type":"boolean"},
+    "fallback":{"type":"boolean"},
+    "selection_reason":{"type":"string","minLength":1},
+    "fallback_reason":{"type":["string","null"],"minLength":1}
+  }
+}

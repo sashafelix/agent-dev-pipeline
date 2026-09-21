@@ -103,6 +103,8 @@ def validate_roles(roles_doc: dict[str, Any]) -> tuple[set[str], list[str]]:
 
 def validate_learnings(learnings_doc: dict[str, Any]) -> list[str]:
     errors: list[str] = []
+    if learnings_doc.get("authority") != "advisory":
+        errors.append("learnings.json: learnings must remain advisory and cannot become canonical evidence")
     entries = learnings_doc["entries"]
     ids = [entry["id"] for entry in entries]
     id_set = set(ids)

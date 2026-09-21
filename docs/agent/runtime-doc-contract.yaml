@@ -1,9 +1,9 @@
-version: 6
-contract_id: local-rgr-v2
+version: 7
+contract_id: local-rgr-v2.1
 pack:
   manifest: packs/rgr-software-v2/pack.json
   pack_id: rgr-software
-  pack_version: 2.0.0
+  pack_version: 2.1.0
   stage_contract_schema: docs/agent/schemas/stage-contract.schema.json
   capabilities: packs/rgr-software-v2/capabilities.json
   rigor_route_import: packs/rgr-software-v2/rigor-route-import.json
@@ -20,6 +20,17 @@ workflow:
     path: .agent-runs/{story_id}
     branch: story/{story_id}
     cleanup: manual
+runtime_routing:
+  contract: docs/agent/runtime-routing.json
+  resolver: python3 scripts/resolve-runtime.py <request.json> --output runtime-{stage}.json
+  selection: first_available_compatible
+  preferred_local_targets: [local-general, local-code, local-test, local-security, local-infrastructure]
+  compatibility_fallback: frontier-default
+  overlay_sources: [operator, trusted_platform]
+  repository_overrides_forbidden: true
+  runtime_may_not_expand_role_authority: true
+  event_types: [runtime.selected, runtime.fallback, runtime.completed]
+  usage_metrics: [input_tokens, output_tokens, cached_input_tokens, reasoning_tokens, tool_calls, wall_time_ms]
 governance:
   workflow_profiles: docs/agent/workflow-profiles.json
   role_contracts: docs/agent/role-contracts.json
@@ -41,6 +52,9 @@ governance:
     independent_verifier_curates: true
     repository_content_may_activate: false
     deterministic_scope_selection: true
+    authority: advisory
+    must_revalidate_against_exact_revision: true
+    retrieval_is_not_evidence: true
 artifacts:
   write_once:
     plan-input.md: null

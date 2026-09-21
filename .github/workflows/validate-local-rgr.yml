@@ -26,6 +26,7 @@ jobs:
             scripts/validate-governance.py \
             scripts/validate-run-governance.py \
             scripts/validate-pack.py \
+            scripts/resolve-runtime.py \
             scripts/export-run-bundle.py \
             scripts/verify-export-bundle.py \
             scripts/generate-contract-fixture.py
@@ -62,6 +63,35 @@ jobs:
           python scripts/resolve-profile.py /tmp/high.json --output /tmp/high-resolution.json
           grep -q '"selected_profile": "high-risk"' /tmp/high-resolution.json
           grep -q '"threat_modeler"' /tmp/high-resolution.json
+      - name: Exercise governed runtime routing
+        run: |
+          cat > /tmp/runtime-local.json <<'JSON'
+          {"stage":"green_code","role":"implementer","available_targets":["local-code","frontier-default"]}
+          JSON
+          python scripts/resolve-runtime.py /tmp/runtime-local.json --output /tmp/runtime-local-selection.json
+          grep -q '"target_id": "local-code"' /tmp/runtime-local-selection.json
+          grep -q '"locality": "local"' /tmp/runtime-local-selection.json
+
+          cat > /tmp/runtime-fallback.json <<'JSON'
+          {"stage":"green_code","role":"implementer","available_targets":["frontier-default"]}
+          JSON
+          python scripts/resolve-runtime.py /tmp/runtime-fallback.json --output /tmp/runtime-fallback-selection.json
+          grep -q '"target_id": "frontier-default"' /tmp/runtime-fallback-selection.json
+          grep -q '"fallback": true' /tmp/runtime-fallback-selection.json
+
+          cat > /tmp/runtime-overlay.json <<'JSON'
+          {"stage":"green_code","role":"implementer","available_targets":["local-code","frontier-default"],"overlay":{"implementer":"frontier-default"},"overlay_source":"operator"}
+          JSON
+          python scripts/resolve-runtime.py /tmp/runtime-overlay.json --output /tmp/runtime-overlay-selection.json
+          grep -q '"overlay_applied": true' /tmp/runtime-overlay-selection.json
+
+          cat > /tmp/runtime-repo-overlay.json <<'JSON'
+          {"stage":"green_code","role":"implementer","available_targets":["local-code","frontier-default"],"overlay":{"implementer":"frontier-default"},"overlay_source":"repository"}
+          JSON
+          if python scripts/resolve-runtime.py /tmp/runtime-repo-overlay.json; then
+            echo 'repository-controlled runtime overlay unexpectedly passed' >&2
+            exit 1
+          fi
       - name: Exercise schema validator reference and failure paths
         run: |
           python - <<'PY'

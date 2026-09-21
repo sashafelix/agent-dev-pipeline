@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "contract_version": "local-rgr-v2.1",
+  "pack_id": "rgr-software",
+  "pack_version": "2.1.0",
+  "policy": {
+    "selection": "first_available_compatible",
+    "overlay_sources": ["operator", "trusted_platform"],
+    "repository_overrides_forbidden": true,
+    "fallback_requires_reason": true,
+    "capability_mismatch_blocks": true,
+    "runtime_may_not_expand_authority": true,
+    "learned_context_is_advisory": true
+  },
+  "targets": [
+    {"id":"local-general","adapter":"openai-compatible","model_ref":"env:RGR_LOCAL_GENERAL_MODEL","endpoint_ref":"env:RGR_LOCAL_BASE_URL","locality":"local","cost_class":"local","capabilities":["planning","reasoning","repository_analysis","review","specification","structured_output","tool_calling","verification"]},
+    {"id":"local-code","adapter":"openai-compatible","model_ref":"env:RGR_LOCAL_CODE_MODEL","endpoint_ref":"env:RGR_LOCAL_BASE_URL","locality":"local","cost_class":"local","capabilities":["code_generation","code_review","migration_review","reasoning","structured_output","test_generation","tool_calling","verification"]},
+    {"id":"local-test","adapter":"openai-compatible","model_ref":"env:RGR_LOCAL_TEST_MODEL","endpoint_ref":"env:RGR_LOCAL_BASE_URL","locality":"local","cost_class":"local","capabilities":["code_review","reasoning","structured_output","test_generation","tool_calling","verification"]},
+    {"id":"local-security","adapter":"openai-compatible","model_ref":"env:RGR_LOCAL_SECURITY_MODEL","endpoint_ref":"env:RGR_LOCAL_BASE_URL","locality":"local","cost_class":"local","capabilities":["reasoning","security_review","structured_output","tool_calling","verification"]},
+    {"id":"local-infrastructure","adapter":"openai-compatible","model_ref":"env:RGR_LOCAL_INFRA_MODEL","endpoint_ref":"env:RGR_LOCAL_BASE_URL","locality":"local","cost_class":"local","capabilities":["infrastructure_review","reasoning","structured_output","tool_calling","verification"]},
+    {"id":"frontier-default","adapter":"claude-code","model_ref":"runtime-default","endpoint_ref":null,"locality":"external","cost_class":"frontier","capabilities":["code_generation","code_review","infrastructure_review","migration_review","planning","reasoning","repository_analysis","review","security_review","specification","structured_output","test_generation","tool_calling","verification"]}
+  ],
+  "routes": [
+    {"id":"prepare-repository-analyst","stage":"prepare","role":"repository_analyst","required_model_capabilities":["repository_analysis","structured_output"],"targets":["local-general","frontier-default"]},
+    {"id":"brainstorm-specifier","stage":"brainstorm","role":"specifier","required_model_capabilities":["specification","reasoning","structured_output"],"targets":["local-general","frontier-default"]},
+    {"id":"plan-orchestrator","stage":"plan","role":"orchestrator","required_model_capabilities":["planning","reasoning","structured_output"],"targets":["local-general","frontier-default"]},
+    {"id":"analyze-consistency","stage":"analyze","role":"consistency_analyst","required_model_capabilities":["review","reasoning","structured_output"],"targets":["local-general","frontier-default"]},
+    {"id":"red-test-author","stage":"red_test","role":"test_author","required_model_capabilities":["test_generation","reasoning","structured_output"],"targets":["local-test","local-code","frontier-default"]},
+    {"id":"green-implementer","stage":"green_code","role":"implementer","required_model_capabilities":["code_generation","reasoning","structured_output"],"targets":["local-code","frontier-default"]},
+    {"id":"refactor-refactorer","stage":"refactor","role":"refactorer","required_model_capabilities":["code_generation","code_review","reasoning","structured_output"],"targets":["local-code","frontier-default"]},
+    {"id":"verify-independent","stage":"quality_gate","role":"independent_verifier","required_model_capabilities":["verification","code_review","reasoning","structured_output"],"targets":["local-test","local-code","frontier-default"]},
+    {"id":"converge-reviewer","stage":"converge","role":"convergence_reviewer","required_model_capabilities":["verification","review","reasoning","structured_output"],"targets":["local-general","frontier-default"]},
+    {"id":"specialist-risk","stage":"*","role":"risk_reviewer","required_model_capabilities":["verification","review","reasoning","structured_output"],"targets":["local-general","frontier-default"]},
+    {"id":"specialist-threat","stage":"*","role":"threat_modeler","required_model_capabilities":["security_review","verification","reasoning","structured_output"],"targets":["local-security","frontier-default"]},
+    {"id":"specialist-migration","stage":"*","role":"migration_reviewer","required_model_capabilities":["migration_review","verification","reasoning","structured_output"],"targets":["local-code","frontier-default"]},
+    {"id":"specialist-infrastructure","stage":"*","role":"infrastructure_reviewer","required_model_capabilities":["infrastructure_review","verification","reasoning","structured_output"],"targets":["local-infrastructure","frontier-default"]},
+    {"id":"specialist-contract","stage":"*","role":"contract_reviewer","required_model_capabilities":["verification","review","reasoning","structured_output"],"targets":["local-general","frontier-default"]},
+    {"id":"specialist-accessibility","stage":"*","role":"accessibility_reviewer","required_model_capabilities":["verification","review","reasoning","structured_output"],"targets":["local-general","frontier-default"]}
+  ]
+}

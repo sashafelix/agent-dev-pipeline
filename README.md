@@ -8,7 +8,7 @@ Rather than giving one agent a broad prompt and trusting the result, Local RGR t
 PREPARE → BRAINSTORM → PLAN → ANALYZE → RED → GREEN → REFACTOR → VERIFY → CONVERGE
 ```
 
-Version: `2.0.0`
+Version: `2.1.0`
 
 ## Why this exists
 
@@ -30,6 +30,8 @@ The result is a repository-local workflow designed to answer:
 ## What makes it different
 
 - **Deterministic stage contracts** — each stage declares its role, inputs, outputs, capabilities, exit conditions and failure classes.
+- **Governed runtime routing** — roles resolve to capability-compatible local-first model targets with explicit fallback and trusted per-run overlays.
+- **Runtime observability** — model selection, fallback and safe token/tool/time metrics can be recorded in the append-only event ledger.
 - **Repository isolation** — each run works in a dedicated Git worktree pinned to an exact base revision.
 - **Role separation** — the GREEN implementer cannot issue the final VERIFY verdict.
 - **Risk-aware governance** — `small`, `standard` and `high-risk` profiles retain the same mandatory stages while increasing evidence, specialist review and checkpoints.
@@ -63,7 +65,11 @@ The orchestrator owns state transitions. Stage agents operate only inside the au
 
 The portable protocol lives under `packs/rgr-software-v2/` and the canonical governance/evidence contracts live under `docs/agent/`.
 
-The repository currently ships Claude Code agent definitions under `.claude/agents/` as one executable local adapter. The pack, role, evidence and validation contracts are deliberately separated from the model runtime so other runtimes can map onto the same capability model. A self-hosted LLM adapter is not bundled here; integrating one would require an explicit runtime adapter that honours the same contracts and boundaries.
+The repository currently ships Claude Code agent definitions under `.claude/agents/` as one executable local adapter. The pack, role, evidence and validation contracts are deliberately separated from the model runtime so other runtimes can map onto the same capability model. Runtime selection is now a first-class governed contract in `docs/agent/runtime-routing.json`. The deterministic resolver `scripts/resolve-runtime.py` maps an exact stage/role to the first available compatible target, preferring local OpenAI-compatible specialist targets and falling back to the current Claude Code adapter. Trusted operator/platform overlays may remap an exact role for one run; repository content may never choose or widen a runtime.
+
+The routing contract declares model references through environment indirection rather than credentials. A self-hosted adapter can therefore satisfy `local-general`, `local-code`, `local-test`, `local-security` or `local-infrastructure` without changing the RGR role contract. Runtime choice never changes filesystem/tool/publication authority.
+
+Governed learnings remain advisory context only. They must be revalidated against the exact repository revision before influencing a plan or verdict and are never canonical evidence by themselves.
 
 Minimum local tooling:
 
@@ -174,9 +180,10 @@ If you are evaluating the design rather than running it, start with:
 1. [`packs/rgr-software-v2/pack.json`](packs/rgr-software-v2/pack.json) — portable protocol manifest.
 2. [`packs/rgr-software-v2/capabilities.json`](packs/rgr-software-v2/capabilities.json) — required capabilities and constraints.
 3. [`.claude/agents/ai-pipeline-rgr-orchestrator.md`](.claude/agents/ai-pipeline-rgr-orchestrator.md) — local execution orchestration.
-4. [`docs/agent/workflow-profiles.json`](docs/agent/workflow-profiles.json) — deterministic risk profiles.
-5. [`docs/agent/role-contracts.json`](docs/agent/role-contracts.json) — role and delegation authority.
-6. [`.github/workflows/validate-local-rgr.yml`](.github/workflows/validate-local-rgr.yml) — end-to-end contract validation.
+4. [`docs/agent/runtime-routing.json`](docs/agent/runtime-routing.json) — governed role/stage → runtime routes and fallback order.
+5. [`docs/agent/workflow-profiles.json`](docs/agent/workflow-profiles.json) — deterministic risk profiles.
+6. [`docs/agent/role-contracts.json`](docs/agent/role-contracts.json) — role and delegation authority.
+7. [`.github/workflows/validate-local-rgr.yml`](.github/workflows/validate-local-rgr.yml) — end-to-end contract validation.
 
 ## Reference
 

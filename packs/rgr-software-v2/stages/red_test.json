@@ -1,17 +1,57 @@
 {
   "schema_version": "1.0",
   "pack_id": "rgr-software",
-  "pack_version": "2.0.0",
+  "pack_version": "2.1.0",
   "stage": "red_test",
   "sequence": 5,
   "role": "test_author",
-  "input_artifacts": ["brainstorm.json", "detailed-plan.json", "analysis-report.json", "context-red_test.json"],
-  "output_artifacts": ["red-result.json"],
-  "required_capabilities": ["bounded-filesystem-read", "bounded-story-write", "command-execution", "canonical-json", "schema-validation", "append-only-events"],
-  "forbidden_capabilities": ["production source write", "final verdict", "stage transition"],
-  "deterministic_exit_conditions": ["stage result schema valid", "every criterion has red_confirmed evidence", "failures show intended business gap", "self check complete"],
-  "failure_classes": ["orphan-test", "green-on-first-run", "compile-scaffold-failure", "missing-red-evidence", "schema-violation"],
-  "context_policy": {"manifest_required": true, "profile_budget_enforced": true, "repository_content_untrusted": true},
-  "retry_policy": {"max_attempts": 1, "retryable_classes": ["transient-tooling", "flaky-container-startup"]},
+  "input_artifacts": [
+    "brainstorm.json",
+    "detailed-plan.json",
+    "analysis-report.json",
+    "context-red_test.json"
+  ],
+  "output_artifacts": [
+    "red-result.json"
+  ],
+  "required_capabilities": [
+    "bounded-filesystem-read",
+    "bounded-story-write",
+    "command-execution",
+    "canonical-json",
+    "schema-validation",
+    "append-only-events",
+    "runtime-routing"
+  ],
+  "forbidden_capabilities": [
+    "production source write",
+    "final verdict",
+    "stage transition"
+  ],
+  "deterministic_exit_conditions": [
+    "stage result schema valid",
+    "every criterion has red_confirmed evidence",
+    "failures show intended business gap",
+    "self check complete"
+  ],
+  "failure_classes": [
+    "orphan-test",
+    "green-on-first-run",
+    "compile-scaffold-failure",
+    "missing-red-evidence",
+    "schema-violation"
+  ],
+  "context_policy": {
+    "manifest_required": true,
+    "profile_budget_enforced": true,
+    "repository_content_untrusted": true
+  },
+  "retry_policy": {
+    "max_attempts": 1,
+    "retryable_classes": [
+      "transient-tooling",
+      "flaky-container-startup"
+    ]
+  },
   "next_stage": "green_code"
 }

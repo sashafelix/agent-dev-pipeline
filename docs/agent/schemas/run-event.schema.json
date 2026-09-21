@@ -4,20 +4,233 @@
   "title": "RunEvent",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "sequence", "timestamp", "story_id", "attempt", "stage", "event_type", "actor_role", "artifact_refs"],
+  "required": [
+    "schema_version",
+    "sequence",
+    "timestamp",
+    "story_id",
+    "attempt",
+    "stage",
+    "event_type",
+    "actor_role",
+    "artifact_refs"
+  ],
   "properties": {
-    "schema_version": {"const": "1.0"},
-    "sequence": {"type": "integer", "minimum": 1},
-    "timestamp": {"type": "string", "format": "date-time"},
-    "story_id": {"type": "string", "minLength": 1},
-    "attempt": {"type": "integer", "minimum": 1},
-    "stage": {"type": "string", "enum": ["setup", "prepare", "brainstorm", "plan", "analyze", "red_test", "green_code", "refactor", "quality_gate", "converge", "close"]},
-    "event_type": {"type": "string", "enum": ["run.created", "profile.resolved", "checkpoint.requested", "checkpoint.accepted", "stage.started", "stage.completed", "stage.failed", "artifact.created", "command.started", "command.completed", "decision.recorded", "attempt.started", "run.completed", "run.failed"]},
-    "actor_role": {"type": "string", "enum": ["orchestrator", "repository_analyst", "specifier", "planner", "consistency_analyst", "test_author", "implementer", "refactorer", "independent_verifier", "convergence_reviewer", "risk_reviewer", "threat_modeler", "migration_reviewer", "infrastructure_reviewer", "contract_reviewer", "accessibility_reviewer", "operator"]},
-    "outcome": {"type": ["string", "null"], "enum": ["PASS", "WARN", "FAIL", "CONVERGED", "REMEDIATE", null]},
-    "causation_sequence": {"type": ["integer", "null"], "minimum": 1},
-    "correlation_id": {"type": ["string", "null"]},
-    "artifact_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
-    "safe_summary": {"type": ["string", "null"]}
+    "schema_version": {
+      "const": "1.0"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "story_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "setup",
+        "prepare",
+        "brainstorm",
+        "plan",
+        "analyze",
+        "red_test",
+        "green_code",
+        "refactor",
+        "quality_gate",
+        "converge",
+        "close"
+      ]
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "run.created",
+        "profile.resolved",
+        "checkpoint.requested",
+        "checkpoint.accepted",
+        "stage.started",
+        "stage.completed",
+        "stage.failed",
+        "artifact.created",
+        "command.started",
+        "command.completed",
+        "decision.recorded",
+        "attempt.started",
+        "run.completed",
+        "run.failed",
+        "runtime.selected",
+        "runtime.fallback",
+        "runtime.completed"
+      ]
+    },
+    "actor_role": {
+      "type": "string",
+      "enum": [
+        "orchestrator",
+        "repository_analyst",
+        "specifier",
+        "planner",
+        "consistency_analyst",
+        "test_author",
+        "implementer",
+        "refactorer",
+        "independent_verifier",
+        "convergence_reviewer",
+        "risk_reviewer",
+        "threat_modeler",
+        "migration_reviewer",
+        "infrastructure_reviewer",
+        "contract_reviewer",
+        "accessibility_reviewer",
+        "operator"
+      ]
+    },
+    "outcome": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "PASS",
+        "WARN",
+        "FAIL",
+        "CONVERGED",
+        "REMEDIATE",
+        null
+      ]
+    },
+    "causation_sequence": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "correlation_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "artifact_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "safe_summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "runtime": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "route_id",
+        "target_id",
+        "adapter",
+        "model_ref",
+        "endpoint_ref",
+        "locality",
+        "cost_class"
+      ],
+      "properties": {
+        "route_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "adapter": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "endpoint_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "locality": {
+          "type": "string",
+          "enum": [
+            "local",
+            "external"
+          ]
+        },
+        "cost_class": {
+          "type": "string",
+          "enum": [
+            "local",
+            "metered",
+            "frontier"
+          ]
+        }
+      }
+    },
+    "usage": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "input_tokens",
+        "output_tokens",
+        "cached_input_tokens",
+        "reasoning_tokens",
+        "tool_calls",
+        "wall_time_ms"
+      ],
+      "properties": {
+        "input_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "output_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cached_input_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reasoning_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tool_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "wall_time_ms": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
   }
 }
