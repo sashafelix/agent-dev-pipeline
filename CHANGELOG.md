@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.0
+
+- Added governed local-first runtime routing with exact stage/role routes, capability checks, ordered frontier fallback and trusted per-run overlays.
+- Added local specialist target classes for general reasoning, coding, testing, security and infrastructure while preserving the current Claude Code adapter as compatibility fallback.
+- Added runtime selection/fallback/completion event types and safe token/tool/time usage fields for model-cost and escalation analysis.
+- Made governed learnings explicitly advisory and required revalidation against exact repository evidence.
+- Added CI coverage for local selection, frontier fallback, trusted overlays and rejection of repository-controlled runtime overrides.
+
 ## 2.0.0
 
 - Added the portable `rgr-software` pack manifest and nine versioned stage contracts.
