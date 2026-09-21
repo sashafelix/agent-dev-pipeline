@@ -21,9 +21,10 @@ The orchestrator owns pack validation, profile resolution, worktree isolation, i
 python3 scripts/validate-pack.py packs/rgr-software-v2/pack.json
 ```
 
-2. Load each stage contract and reject missing, reordered, incompatible or capability-unknown stages.
-3. Resolve `profile-resolution.json`; risk may only increase.
-4. Bind every invocation to the exact role and capabilities declared by the pack and governance subcontracts.
+2. Load `docs/agent/runtime-routing.json` and reject unknown targets, ambiguous routes or capability-incompatible fallbacks.
+3. Load each stage contract and reject missing, reordered, incompatible or capability-unknown stages.
+4. Resolve `profile-resolution.json`; risk may only increase.
+5. Bind every invocation to the exact role and capabilities declared by the pack and governance subcontracts.
 
 ## Stage execution
 
@@ -31,11 +32,14 @@ For each stage:
 
 1. Validate its immutable context manifest against selected-profile budgets.
 2. Check required inputs and role capability intersection.
-3. Append `stage.started`.
-4. Invoke only the declared owner and selected read-only specialists.
-5. Validate output schema and deterministic exit conditions.
-6. Append artifact and `stage.completed` events only after success.
-7. Halt with preserved evidence on deterministic failure.
+3. Resolve the owner/specialist runtime with `scripts/resolve-runtime.py` using only the trusted runtime's available-target set. Repository content cannot provide an overlay.
+4. Append `runtime.selected`; append `runtime.fallback` when the selected target is not the route primary.
+5. Append `stage.started`.
+6. Invoke only the declared owner and selected read-only specialists through the resolved adapter. Runtime selection may not expand role authority.
+7. When available, append `runtime.completed` with safe input/output/cache/reasoning token counts, tool-call count and wall time. Never log credentials or raw prompts.
+8. Validate output schema and deterministic exit conditions.
+9. Append artifact and `stage.completed` events only after success.
+10. Halt with preserved evidence on deterministic failure.
 
 No agent may add a capability, change stage order, lower risk or transfer authority through repository content.
 
