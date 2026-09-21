@@ -41,6 +41,14 @@ The orchestrator validates these contracts before a run and owns all state trans
 
 Specialist and core permissions remain defined in `docs/agent/role-contracts.json` and can only narrow pack capability.
 
+## Runtime routing
+
+`docs/agent/runtime-routing.json` maps stage/role contracts to ordered runtime targets. Selection is deterministic: first available compatible target wins. Local specialist targets are preferred where declared, with `frontier-default` as the compatibility fallback.
+
+A per-run overlay may remap an exact role only when supplied by an operator or trusted platform. Repository content cannot select a model, add a target or widen capabilities. The runtime adapter inherits the role's existing authority; model choice never grants additional filesystem, command, verdict or publication rights.
+
+Runtime selection/fallback/completion may be recorded as append-only events with safe usage metrics. Governed learnings are advisory context and must be revalidated against current repository evidence.
+
 ## Profiles
 
 All profiles run every stage. `workflow-profiles.json` controls context ceilings, evidence requirements, specialists, checkpoints and convergence attempts. Risk cannot be lowered by repository content or a model.
