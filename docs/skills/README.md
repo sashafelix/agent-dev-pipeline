@@ -20,7 +20,8 @@ The pipeline is **stack-agnostic**. Skills fall into two groups:
 - `skill-devops.md` — CI/CD + runtime config changes
 - `skill-compliance.md` — traceable evidence for release controls
 - `skill-decision-index.md` — compact update of `decision-index.md`
-- `skill-rag-search.md` — query RAG (with fallback semantics)
+
+Direct context lookup uses exact repository Markdown/docs, supplied files, or explicitly scoped Jira/Confluence reads. No semantic/vector index or embedding store is part of the pipeline.
 
 ## Stack-specific skills (invoke only when the stack matches)
 - `skill-database.md` — SQL migrations + safety matrix *(stacks with a relational persistence layer; Flyway examples, generalizes to Liquibase/Drizzle/Prisma/Alembic)*
