@@ -13,7 +13,7 @@ Capture traceable evidence for security, quality, and release controls. Every co
 - `docs/conventions/backend-conventions-security.md`
 - `docs/agent/learnings.md` (filter by `compliance:*`, `security:*`, `audit:*`)
 - Run folder: `handoff.md`, `quality-gates.md`, `decision-log.md`, `brainstorm.md`
-- RAG: `--source standards_it_security`, `--source standards_it_iam`, `--source standards_it_ai`
+- Direct sources: linked security/IAM/AI standards, supplied documents, or repository Markdown; retain the exact file/page/URL reference
 
 ## Writes
 - Compliance notes in `docs/agent/runs/{story_id}/decision-log.md`
@@ -21,7 +21,7 @@ Capture traceable evidence for security, quality, and release controls. Every co
 
 ## Evidence Checklist
 
-Every entry below must have a concrete link (file path, test name, commit, migration ID, RAG `source_ref`). No hand-wavy "we follow the standard" claims.
+Every entry below must have a concrete link (file path, test name, commit, migration ID, direct-source reference). No hand-wavy "we follow the standard" claims.
 
 ### 1. Security controls
 - [ ] Authentication required on new endpoints? Proof: `@PreAuthorize` on controller, security test asserting 401/403.
