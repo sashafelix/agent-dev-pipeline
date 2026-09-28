@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate local RGR v2.2 run-bundle schemas and cross-artifact invariants."""
+"""Validate local RGR v2.3 run-bundle schemas and cross-artifact invariants."""
 from __future__ import annotations
 
 import argparse
@@ -368,7 +368,7 @@ def main() -> int:
         for error in errors:
             print(f"ERROR: {error}", file=sys.stderr)
         return 1
-    print(f"PASS: {args.run_dir} satisfies local RGR v2.2 schemas and invariants")
+    print(f"PASS: {args.run_dir} satisfies local RGR v2.3 schemas and invariants")
     return 0
 
 
