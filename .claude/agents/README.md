@@ -1,6 +1,8 @@
 # Claude Code Sub-Agents — Local RGR v2
 
-Invoke only `ai-pipeline-rgr-orchestrator` after producing a Plan.
+For ambiguous/raw tasks, `ai-pipeline-intake` may run first. It is outside the governed run and only produces a READY intake/plan handoff.
+
+Invoke only `ai-pipeline-rgr-orchestrator` for the governed delivery run.
 
 ## Portable protocol
 
@@ -11,6 +13,8 @@ Pack manifest: `packs/rgr-software-v2/pack.json`
 Each stage is governed by a versioned JSON contract declaring its role, artifacts, capabilities, exit conditions, failures and next stage.
 
 ## Agents
+
+- `ai-pipeline-intake` — optional pre-run requirements resolver; no governed delivery authority.
 
 - orchestrator — validates pack/profile/context and owns transitions.
 - `ai-pipeline-prepare` — repository analyst.
@@ -33,3 +37,8 @@ python3 scripts/verify-export-bundle.py evidence.tar.gz
 ```
 
 The archive contains no story source, secrets or publication authority.
+
+
+## Trusted project profiles and GREEN lanes
+
+Operator/trusted-platform `project-profile.json` snapshots provide authoritative project facts but cannot alter governance. PLAN resolves `lane-resolution.json`; GREEN may execute disjoint lanes concurrently only when the resolver and runtime both allow it, otherwise it executes the same lane plan sequentially.
