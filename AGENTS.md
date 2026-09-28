@@ -64,3 +64,14 @@ All profiles run every stage. `workflow-profiles.json` controls context ceilings
 ## Boundaries
 
 The pack declares no authentication, multi-tenancy, remote scheduling, credential custody, billing, production access, automatic merge or deployment capability.
+
+
+## Pre-run intake and trusted project facts
+
+`ai-pipeline-intake` is optional and runs before PREPARE. It may resolve context and ask the user questions, but it has no role or stage authority. A READY intake is deterministically rendered to `plan-input.md`.
+
+A `project-profile.json` may be bound only from `operator` or `trusted_platform` provenance. Its project facts and explicit project decisions are authoritative project context. They cannot change stage order, risk profile, roles, capabilities, runtime routing, checkpoints, approvals, credentials, merge or deployment boundaries. Material disagreement with exact repository evidence is a blocker, not a reason to guess.
+
+## Deterministic GREEN lanes
+
+PLAN may declare implementation lanes. `scripts/resolve-lanes.py` assigns dependencies into topological waves and checks literal write-surface overlap. Only disjoint lanes in the same resolved wave are eligible for concurrent invocation. Overlap deterministically falls back to sequential execution. Every lane still runs as the governed `implementer` role and cannot widen its write surface.
