@@ -2,11 +2,11 @@
 
 ## 2.3.0
 
-- Removed the legacy OpenSearch/vector RAG path, including its shell client, skill definition and `rag-read` capability.
+- Removed the legacy OpenSearch/vector retrieval path, including its shell client, skill definition and `rag-read` capability.
 - Replaced indexed retrieval with bounded direct reads from exact repository Markdown/docs, supplied documents, Jira or Confluence sources.
 - Increased structured intake from three to five clarification rounds while retaining the five-material-questions-per-round cap.
 - Renamed intake provenance from generic `retrieval` to `direct_source` and documented that direct source content is context, not governance authority.
-- Added CI guards against reintroducing the removed OpenSearch/RAG implementation and aligned protocol/evaluation/learnings version metadata to v2.3.
+- Added CI guards against reintroducing the removed indexed-retrieval implementation and aligned protocol/evaluation/learnings version metadata to v2.3.
 
 
 ## 2.2.0
