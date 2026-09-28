@@ -27,6 +27,9 @@ jobs:
             scripts/validate-run-governance.py \
             scripts/validate-pack.py \
             scripts/resolve-runtime.py \
+            scripts/validate-project-profile.py \
+            scripts/render-plan-input.py \
+            scripts/resolve-lanes.py \
             scripts/export-run-bundle.py \
             scripts/verify-export-bundle.py \
             scripts/generate-contract-fixture.py
@@ -92,6 +95,36 @@ jobs:
             echo 'repository-controlled runtime overlay unexpectedly passed' >&2
             exit 1
           fi
+      - name: Exercise structured intake, trusted project profile and lane resolution
+        run: |
+          cat > /tmp/project-profile.json <<'JSON'
+          {"schema_version":"1.0","project_id":"ci-project","profile_version":"1","provenance":{"source":"operator","issued_by":"ci","issued_at":"2026-01-01T00:00:00Z","source_ref":null},"project":{"root":".","stack":["python"],"frameworks":[],"commands":{"build":["python -m py_compile app.py"],"test":["python -m unittest"],"lint":[]},"architecture":{"style":"service","source_of_truth":"docs/architecture.md"},"modules":[],"environment":"test"},"decisions":{"database":"postgres"},"constraints":["No production credentials"]}
+          JSON
+          python scripts/validate-project-profile.py /tmp/project-profile.json --expected-project-id ci-project
+
+          cat > /tmp/intake.json <<'JSON'
+          {"schema_version":"1.0","intake_id":"CI-INTAKE","rounds":1,"status":"ready","raw_request":"Add a bounded fixture feature","project_profile_ref":"project-profile.json","resolved":[{"field":"database","value":"postgres","source":"trusted_project_profile","source_ref":"project-profile.json","confidence":"high","authority":"authoritative"}],"questions":[],"task_spec":{"title":"Fixture feature","description":"Add a bounded fixture feature.","requirements":["Keep behaviour deterministic"],"constraints":["No production credentials"],"acceptance_criteria":["Given fixture input, fixture output is returned"],"user_decisions":{}}}
+          JSON
+          python scripts/render-plan-input.py /tmp/intake.json --output /tmp/plan-input.md
+          grep -q 'source: structured-intake' /tmp/plan-input.md
+
+          cat > /tmp/lanes-parallel.json <<'JSON'
+          {"schema_version":"1.0","story_id":"CI-LANES","status":"locked","tasks":[{"id":"TASK-1","stage":"red_test","description":"Write failing test","depends_on":[],"outputs":["tests/test_api.py"],"criteria":["SC-1"]},{"id":"TASK-2","stage":"green_code","description":"Implement backend","depends_on":["TASK-1"],"outputs":["backend/app.py"],"criteria":["SC-1"]},{"id":"TASK-3","stage":"green_code","description":"Implement frontend","depends_on":["TASK-1"],"outputs":["frontend/app.ts"],"criteria":["SC-1"]}],"criterion_test_map":[{"sc_id":"SC-1","test_ids":["TEST-1"]}],"implementation_lanes":[{"id":"LANE-backend","kind":"backend","description":"Backend lane","task_ids":["TASK-2"],"write_surfaces":["backend"],"depends_on_lanes":[]},{"id":"LANE-frontend","kind":"frontend","description":"Frontend lane","task_ids":["TASK-3"],"write_surfaces":["frontend"],"depends_on_lanes":[]}]}
+          JSON
+          python scripts/resolve-lanes.py /tmp/lanes-parallel.json --output /tmp/lanes-parallel-resolution.json
+          grep -q '"mode": "parallel"' /tmp/lanes-parallel-resolution.json
+
+          python - <<'PY'
+          import json
+          p='/tmp/lanes-parallel.json'
+          d=json.load(open(p))
+          d['implementation_lanes'][1]['write_surfaces']=['backend/shared']
+          d['tasks'][2]['outputs']=['backend/shared/app.ts']
+          json.dump(d, open('/tmp/lanes-overlap.json','w'))
+          PY
+          python scripts/resolve-lanes.py /tmp/lanes-overlap.json --output /tmp/lanes-overlap-resolution.json
+          grep -q '"mode": "sequential"' /tmp/lanes-overlap-resolution.json
+
       - name: Exercise schema validator reference and failure paths
         run: |
           python - <<'PY'
