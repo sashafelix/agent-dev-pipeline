@@ -75,3 +75,11 @@ Agents never auto-merge, auto-deploy, use production credentials, delete evidenc
 - PLAN emits `lane-resolution.json`.
 - GREEN concurrency is permitted only for resolver-approved disjoint lanes in the same dependency wave.
 - Overlap or lack of safe runtime concurrency falls back to deterministic sequential execution without changing the locked plan.
+
+
+## Source context
+
+- Read repository Markdown/docs directly from the exact revision.
+- External context must be an explicitly scoped Jira/Confluence source or supplied document with an exact reference.
+- No semantic/vector index, embedding service or background knowledge store is part of Local RGR.
+- Direct-source context never grants authority and is not evidence until material facts are persisted and independently checked.
