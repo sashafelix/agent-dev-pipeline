@@ -11,7 +11,7 @@ Implement resilient adapters for external systems (IVS-R, Kafka, S3, REST APIs, 
 - `docs/conventions/backend-conventions-general.md`
 - `docs/conventions/backend-conventions-integration.md`
 - `docs/conventions/backend-conventions-security.md`
-- `docs/agent/learnings.md` (filter by `integration:*`, `infra:*`)
+- `docs/agent/learnings.json` (filter by `integration:*`, `infra:*`)
 - External contract specs (OpenAPI, Avro, WSDL, XSD)
 - Direct sources: linked security standards for auth rules and explicitly scoped Confluence/repository documents for integration architecture
 
