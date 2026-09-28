@@ -38,7 +38,7 @@ Pull the summary from:
 
 ## Tags
 
-Use tags that match the `scope_tags` vocabulary in `learnings.md`:
+Use tags that match the `scope_tags` vocabulary in `docs/agent/learnings.json`:
 - Stack: `backend-java`, `frontend-react`, `mobile-flutter`, `infra-terraform`, …
 - Area: `api`, `db`, `auth`, `integration`, `scheduling`, `observability`, `security`, `ui`, `state`, `routing`, `forms`
 - Risk: `audit`, `pii`, `migration`, `breaking-contract` *(if applicable)*
