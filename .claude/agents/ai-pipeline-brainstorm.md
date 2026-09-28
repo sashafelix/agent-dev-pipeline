@@ -18,7 +18,7 @@ This stage exists because the most expensive agent failures come from bad specs,
 - `CLAUDE.md`
 - `docs/conventions/backend-conventions-general.md`
 - `docs/conventions/backend-conventions-rgr.md`
-- `docs/agent/learnings.md` (filter by tags matching story scope)
+- `docs/agent/learnings.json` (filter by tags matching story scope)
 - `docs/agent/runs/{story_id}/plan-input.md`
 - `docs/agent/runs/{story_id}/run-context.md`
 - Jira acceptance criteria (raw text)
@@ -26,7 +26,7 @@ This stage exists because the most expensive agent failures come from bad specs,
 ## Writes
 - `docs/agent/runs/{story_id}/brainstorm.md` (write-once)
 - `docs/agent/runs/{story_id}/decision-log.md` (append [UNCERTAIN] entries for assumptions made)
-- `docs/agent/learnings.md` (append `candidate` rows when a reusable spec pattern is discovered)
+- `docs/agent/learnings.json` (append `candidate` rows when a reusable spec pattern is discovered)
 
 ## Invokable skills
 - `skill-codebase-comprehension` (to sanity-check the plan against existing code realities)
