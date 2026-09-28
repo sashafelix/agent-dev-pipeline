@@ -140,8 +140,8 @@ jobs:
 
       - name: Reject legacy indexed retrieval references
         run: |
-          if grep -RniE 'skill-rag-search|rag-search\.sh|OPENSEARCH_|RAG_REQUIRED|ai-pipeline-rag|"rag-read"|OpenSearch-backed|OpenSearch RAG|RAG-derived|rag-derived' \
-            --exclude-dir=.git --exclude=CHANGELOG.md .; then
+          if grep -RniE 'OpenSearch|OPENSEARCH_|(^|[^[:alnum:]_])RAG([^[:alnum:]_]|$)|skill-rag-search|rag-search\.sh|RAG_REQUIRED|ai-pipeline-rag|"rag-read"|rag-derived' \
+            --exclude-dir=.git --exclude=CHANGELOG.md --exclude=validate-local-rgr.yml .; then
             echo 'legacy indexed retrieval reference found' >&2
             exit 1
           fi
