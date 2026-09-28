@@ -11,7 +11,7 @@ Capture traceable evidence for security, quality, and release controls. Every co
 - `docs/conventions/backend-conventions-general.md`
 - `docs/conventions/backend-conventions-quality-ops.md`
 - `docs/conventions/backend-conventions-security.md`
-- `docs/agent/learnings.md` (filter by `compliance:*`, `security:*`, `audit:*`)
+- `docs/agent/learnings.json` (filter by `compliance:*`, `security:*`, `audit:*`)
 - Run folder: `handoff.md`, `quality-gates.md`, `decision-log.md`, `brainstorm.md`
 - Direct sources: linked security/IAM/AI standards, supplied documents, or repository Markdown; retain the exact file/page/URL reference
 
