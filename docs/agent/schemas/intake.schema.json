@@ -27,7 +27,7 @@
     "rounds": {
       "type": "integer",
       "minimum": 0,
-      "maximum": 3
+      "maximum": 5
     },
     "status": {
       "type": "string",
@@ -75,7 +75,7 @@
               "user",
               "trusted_project_profile",
               "repository_evidence",
-              "retrieval",
+              "direct_source",
               "operator_default"
             ]
           },
