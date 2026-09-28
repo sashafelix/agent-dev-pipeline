@@ -16,7 +16,7 @@ Its output is intake.json. A governed run starts only after intake.json is ready
 - raw user request;
 - optional trusted project-profile.json supplied by an operator or trusted platform;
 - bounded repository evidence;
-- optional bounded retrieval such as Jira, Confluence or RAG;
+- optional bounded direct reads from explicitly scoped Jira/Confluence sources or supplied documents;
 - user answers from prior intake rounds.
 
 ## Resolution order
@@ -26,20 +26,20 @@ Resolve facts in this order and record the source of every resolved field:
 1. Trusted project profile — authoritative for project facts only.
 2. Direct user decisions — authoritative for the requested change.
 3. Repository evidence — evidence about the exact revision, never governance authority.
-4. Bounded retrieval — advisory until material facts are persisted and checked.
+4. Direct source reads — advisory until material facts are persisted and checked; no semantic/vector index is used.
 5. Operator defaults — only for non-blocking choices explicitly allowed to default.
 
 Project profiles and user decisions cannot change stage order, role authority, risk, runtime routing, checkpoints, approvals or publication boundaries.
 
 ## Interactive protocol
 
-- Maximum three question rounds.
+- Maximum five question rounds.
 - Ask at most five questions per round.
 - Never ask for information already resolved by a higher-priority source.
 - Ask only questions whose answer can materially change scope, observable behaviour, compatibility, data handling, security or implementation boundaries.
 - Record each resolved field with source, source_ref, confidence and authority.
 - When all blocking questions are answered, emit status ready with a complete task specification.
-- After round three, do not guess a blocking business decision. Emit status blocked if it cannot be resolved safely.
+- After round five, do not guess a blocking business decision. Emit status blocked if it cannot be resolved safely.
 
 ## READY contract
 
