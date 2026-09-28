@@ -30,7 +30,8 @@ This stage exists because the most expensive agent failures come from bad specs,
 
 ## Invokable skills
 - `skill-codebase-comprehension` (to sanity-check the plan against existing code realities)
-- `skill-rag-search` (to pull domain context, related Jira history, compliance rules)
+
+Direct external context, when required, must come from explicitly authorised source reads (for example linked Jira/Confluence pages or supplied documents) and be recorded with its exact source reference. Do not query a semantic/vector index.
 
 ## Responsibilities
 
