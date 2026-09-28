@@ -70,7 +70,10 @@
         "run.failed",
         "runtime.selected",
         "runtime.fallback",
-        "runtime.completed"
+        "runtime.completed",
+        "intake.bound",
+        "project_profile.bound",
+        "lane_plan.resolved"
       ]
     },
     "actor_role": {
