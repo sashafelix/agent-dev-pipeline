@@ -68,7 +68,7 @@ If the run also produced a `quality-gates.md` with a verdict worth re-reading, a
 | --- | --- | --- | --- | --- | --- |
 | ACME-1421 | 2026-05-02 | PASS | Inventory adjustment endpoint with audit log | `backend-java`, `api`, `audit`, `postgres` | [log](runs/ACME-1421/decision-log.md) |
 | user-profile-avatar-upload | 2026-05-03 | PASS | Drag-and-drop avatar upload with client-side crop preview | `frontend-react`, `ui`, `forms` | [log](runs/user-profile-avatar-upload/decision-log.md) |
-| rag-2026-04-cleanup | 2026-05-04 | FAIL | Halted at dependency resolve (registry auth 401) | `infra`, `nexus` | [log](runs/rag-2026-04-cleanup/decision-log.md) |
+| source-2026-04-cleanup | 2026-05-04 | FAIL | Halted at dependency resolve (registry auth 401) | `infra`, `nexus` | [log](runs/source-2026-04-cleanup/decision-log.md) |
 ```
 
 ## Guardrails
