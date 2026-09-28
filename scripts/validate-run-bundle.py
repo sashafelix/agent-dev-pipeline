@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate local RGR v1.2 run-bundle schemas and cross-artifact invariants."""
+"""Validate local RGR v2.2 run-bundle schemas and cross-artifact invariants."""
 from __future__ import annotations
 
 import argparse
@@ -16,20 +16,25 @@ STAGES = ["prepare", "brainstorm", "plan", "analyze", "red_test", "green_code", 
 REQUIRED_FILES = [
     "run-context.md", "plan-input.md", "repository-intelligence.json",
     "brainstorm.md", "brainstorm.json", "detailed-plan.md", "detailed-plan.json",
-    "analysis-report.json", "red-result.json", "green-result.json", "refactor-result.json",
-    "handoff.md", "quality-gates.md", "quality-gates.json", "convergence-report.json",
-    "decision-log.md", "events.jsonl",
+    "lane-resolution.json", "analysis-report.json", "red-result.json", "green-result.json",
+    "refactor-result.json", "handoff.md", "quality-gates.md", "quality-gates.json",
+    "convergence-report.json", "decision-log.md", "events.jsonl",
 ]
 ARTIFACT_SCHEMAS = {
     "repository-intelligence.json": "repository-intelligence.schema.json",
     "brainstorm.json": "brainstorm.schema.json",
     "detailed-plan.json": "detailed-plan.schema.json",
+    "lane-resolution.json": "lane-resolution.schema.json",
     "analysis-report.json": "analysis-report.schema.json",
     "red-result.json": "stage-result.schema.json",
     "green-result.json": "stage-result.schema.json",
     "refactor-result.json": "stage-result.schema.json",
     "quality-gates.json": "quality-gates.schema.json",
     "convergence-report.json": "convergence-report.schema.json",
+}
+OPTIONAL_ARTIFACT_SCHEMAS = {
+    "intake.json": "intake.schema.json",
+    "project-profile.json": "project-profile.schema.json",
 }
 STAGE_RESULTS = {
     "red-result.json": ("red_test", "test_author", "red_confirmed"),
@@ -122,6 +127,60 @@ def ids(items: Any, key: str) -> set[str]:
     return {item.get(key) for item in items if isinstance(item, dict) and isinstance(item.get(key), str)}
 
 
+def validate_lane_contract(plan: dict[str, Any], resolution: dict[str, Any], green_result: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    tasks = {item.get("id"): item for item in plan.get("tasks", []) if isinstance(item, dict)}
+    green_ids = {task_id for task_id, task in tasks.items() if task and task.get("stage") == "green_code"}
+    declared = plan.get("implementation_lanes", [])
+    declared_ids = {lane.get("id") for lane in declared if isinstance(lane, dict)}
+    resolved_ids = {lane.get("id") for lane in resolution.get("lanes", []) if isinstance(lane, dict)}
+
+    if resolution.get("story_id") != plan.get("story_id"):
+        errors.append("lane-resolution.json: story_id must match detailed-plan.json")
+
+    if declared:
+        assigned = []
+        for lane in declared:
+            if isinstance(lane, dict):
+                assigned.extend(lane.get("task_ids", []))
+        assigned_set = set(assigned)
+        if len(assigned) != len(assigned_set):
+            errors.append("detailed-plan.json: a GREEN task is assigned to more than one implementation lane")
+        if assigned_set != green_ids:
+            errors.append(
+                f"detailed-plan.json: explicit lanes must assign exactly GREEN tasks {sorted(green_ids)}, got {sorted(assigned_set)}"
+            )
+        if declared_ids != resolved_ids:
+            errors.append(
+                f"lane-resolution.json: lane ids must match declared lanes {sorted(declared_ids)}, got {sorted(resolved_ids)}"
+            )
+        lane_results = green_result.get("lane_results", [])
+        result_ids = {item.get("lane_id") for item in lane_results if isinstance(item, dict)}
+        if result_ids != declared_ids:
+            errors.append(
+                f"green-result.json: lane_results must exactly cover declared lanes {sorted(declared_ids)}, got {sorted(result_ids)}"
+            )
+        if any(item.get("outcome") != "completed" for item in lane_results if isinstance(item, dict)):
+            errors.append("green-result.json: every explicit lane must have outcome=completed")
+
+    wave_ids = [
+        lane_id
+        for wave in resolution.get("waves", [])
+        if isinstance(wave, dict)
+        for lane_id in wave.get("lane_ids", [])
+    ]
+    if len(wave_ids) != len(set(wave_ids)):
+        errors.append("lane-resolution.json: every resolved lane must occur in exactly one wave")
+    if resolved_ids and set(wave_ids) != resolved_ids:
+        errors.append("lane-resolution.json: waves must cover every resolved lane exactly once")
+    if resolution.get("mode") == "parallel":
+        if not any(len(wave.get("lane_ids", [])) > 1 for wave in resolution.get("waves", []) if isinstance(wave, dict)):
+            errors.append("lane-resolution.json: parallel mode requires at least one multi-lane wave")
+        if any(check.get("conflict") is True for check in resolution.get("overlap_checks", []) if isinstance(check, dict)):
+            errors.append("lane-resolution.json: parallel mode cannot contain write-surface conflicts")
+    return errors
+
+
 def validate(run_dir: Path) -> list[str]:
     errors: list[str] = []
     for name in REQUIRED_FILES:
@@ -140,6 +199,31 @@ def validate(run_dir: Path) -> list[str]:
         if isinstance(instance, dict):
             artifacts[filename] = instance
 
+    optional_artifacts: dict[str, dict[str, Any]] = {}
+    for filename, schema_name in OPTIONAL_ARTIFACT_SCHEMAS.items():
+        path = run_dir / filename
+        if not path.is_file():
+            continue
+        artifact_errors, instance = validate_artifact(path, schema_name)
+        errors.extend(artifact_errors)
+        if isinstance(instance, dict):
+            optional_artifacts[filename] = instance
+
+    intake = optional_artifacts.get("intake.json")
+    if intake is not None:
+        if intake.get("status") != "ready":
+            errors.append("intake.json: run snapshot must have status=ready")
+        blockers = [
+            q.get("id") for q in intake.get("questions", [])
+            if isinstance(q, dict) and q.get("blocking") is True and q.get("answered") is not True
+        ]
+        if blockers:
+            errors.append(f"intake.json: unresolved blocking questions {blockers}")
+
+    project_profile = optional_artifacts.get("project-profile.json")
+    if project_profile is not None and project_profile.get("provenance", {}).get("source") not in {"operator", "trusted_platform"}:
+        errors.append("project-profile.json: trusted provenance must be operator or trusted_platform")
+
     contexts: dict[str, dict[str, Any]] = {}
     for path in sorted(run_dir.glob("context-*.json")):
         context_errors, instance = validate_artifact(path, "context-manifest.schema.json")
@@ -149,6 +233,7 @@ def validate(run_dir: Path) -> list[str]:
 
     brainstorm = artifacts.get("brainstorm.json", {})
     plan = artifacts.get("detailed-plan.json", {})
+    lanes = artifacts.get("lane-resolution.json", {})
     analysis = artifacts.get("analysis-report.json", {})
     gates = artifacts.get("quality-gates.json", {})
     convergence = artifacts.get("convergence-report.json", {})
@@ -210,6 +295,20 @@ def validate(run_dir: Path) -> list[str]:
             if isinstance(item, dict) and item.get("status") != expected_status:
                 errors.append(f"{filename}: {item.get('sc_id')} must have status {expected_status}")
 
+    errors.extend(validate_lane_contract(plan, lanes, artifacts.get("green-result.json", {})))
+
+    if project_profile is not None:
+        for stage in STAGES:
+            context = contexts.get(f"context-{stage}.json", {})
+            sources = [
+                item.get("path")
+                for key in ("required_sources", "optional_sources")
+                for item in context.get(key, [])
+                if isinstance(item, dict)
+            ]
+            if "project-profile.json" not in sources:
+                errors.append(f"context-{stage}.json: bound project-profile.json must be present in stage context")
+
     if gates.get("reviewer_role") != "independent_verifier":
         errors.append("quality-gates.json: reviewer_role must be independent_verifier")
     if gates.get("reviewer_identity") == "ai-pipeline-green-code":
@@ -244,6 +343,12 @@ def validate(run_dir: Path) -> list[str]:
     completed = [event.get("stage") for event in events if event.get("event_type") == "stage.completed"]
     if completed != STAGES:
         errors.append(f"events.jsonl: completed stage order must be exactly {STAGES}, got {completed}")
+    if not any(event.get("event_type") == "lane_plan.resolved" and "lane-resolution.json" in event.get("artifact_refs", []) for event in events):
+        errors.append("events.jsonl: missing lane_plan.resolved event referencing lane-resolution.json")
+    if intake is not None and not any(event.get("event_type") == "intake.bound" and "intake.json" in event.get("artifact_refs", []) for event in events):
+        errors.append("events.jsonl: intake snapshot requires intake.bound event")
+    if project_profile is not None and not any(event.get("event_type") == "project_profile.bound" and "project-profile.json" in event.get("artifact_refs", []) for event in events):
+        errors.append("events.jsonl: project profile snapshot requires project_profile.bound event")
 
     revision = repository.get("revision")
     if not isinstance(revision, str) or not revision:
@@ -263,7 +368,7 @@ def main() -> int:
         for error in errors:
             print(f"ERROR: {error}", file=sys.stderr)
         return 1
-    print(f"PASS: {args.run_dir} satisfies local RGR v1.2 schemas and invariants")
+    print(f"PASS: {args.run_dir} satisfies local RGR v2.2 schemas and invariants")
     return 0
 
 
