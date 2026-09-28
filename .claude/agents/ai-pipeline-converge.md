@@ -1,6 +1,6 @@
 ---
 name: ai-pipeline-converge
-description: CONVERGE reviewer for local RGR v1.3. Applies selected-profile attempt budgets and immutable remediation. Orchestrator-invoked only.
+description: Stage 9 CONVERGE reviewer. Applies selected-profile attempt budgets and immutable remediation. Orchestrator-invoked only.
 ---
 
 # Agent: ai-pipeline-converge
