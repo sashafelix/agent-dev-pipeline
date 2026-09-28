@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a deterministic complete small-profile run for contract/CI testing."""
+"""Generate a deterministic complete small-profile run for v2.2 contract/CI testing."""
 from __future__ import annotations
 
 import argparse
@@ -164,10 +164,27 @@ def generate(root: Path) -> None:
         "status": "locked",
         "tasks": [
             {"id": "TASK-1", "stage": "red_test", "description": "Add TEST-1 for SC-1", "depends_on": [], "outputs": ["test_fixture.py"], "criteria": ["SC-1"]},
-            {"id": "TASK-2", "stage": "green_code", "description": "Implement minimum SC-1 behaviour", "depends_on": ["TASK-1"], "outputs": ["fixture.py"], "criteria": ["SC-1"]},
-            {"id": "TASK-3", "stage": "refactor", "description": "Confirm no safe refactor is required", "depends_on": ["TASK-2"], "outputs": ["refactor-result.json"], "criteria": ["SC-1"]},
+            {"id": "TASK-2", "stage": "green_code", "description": "Implement backend half of SC-1", "depends_on": ["TASK-1"], "outputs": ["backend/fixture.py"], "criteria": ["SC-1"]},
+            {"id": "TASK-3", "stage": "green_code", "description": "Implement frontend half of SC-1", "depends_on": ["TASK-1"], "outputs": ["frontend/fixture.ts"], "criteria": ["SC-1"]},
+            {"id": "TASK-4", "stage": "refactor", "description": "Confirm no safe refactor is required", "depends_on": ["TASK-2", "TASK-3"], "outputs": ["refactor-result.json"], "criteria": ["SC-1"]},
         ],
         "criterion_test_map": [{"sc_id": "SC-1", "test_ids": ["TEST-1"]}],
+        "implementation_lanes": [
+            {"id": "LANE-backend", "kind": "backend", "description": "Backend fixture implementation", "task_ids": ["TASK-2"], "write_surfaces": ["backend"], "depends_on_lanes": []},
+            {"id": "LANE-frontend", "kind": "frontend", "description": "Frontend fixture implementation", "task_ids": ["TASK-3"], "write_surfaces": ["frontend"], "depends_on_lanes": []},
+        ],
+    })
+    write_json(root, "lane-resolution.json", {
+        "schema_version": "1.0",
+        "story_id": STORY_ID,
+        "mode": "parallel",
+        "reason": "fixture lanes are dependency-independent with disjoint write surfaces",
+        "lanes": [
+            {"id": "LANE-backend", "kind": "backend", "task_ids": ["TASK-2"], "write_surfaces": ["backend"], "depends_on_lanes": []},
+            {"id": "LANE-frontend", "kind": "frontend", "task_ids": ["TASK-3"], "write_surfaces": ["frontend"], "depends_on_lanes": []},
+        ],
+        "waves": [{"wave": 1, "lane_ids": ["LANE-backend", "LANE-frontend"]}],
+        "overlap_checks": [{"left_lane": "LANE-backend", "right_lane": "LANE-frontend", "conflict": False, "overlap_surfaces": []}],
     })
     write_json(root, "analysis-report.json", {
         "schema_version": "1.0",
@@ -178,7 +195,12 @@ def generate(root: Path) -> None:
         "artifact_refs": ["repository-intelligence.json", "brainstorm.json", "detailed-plan.json"],
     })
     write_json(root, "red-result.json", stage_result("red_test", "test_author", "red_confirmed", "evidence/red-test.log", 1))
-    write_json(root, "green-result.json", stage_result("green_code", "implementer", "pass", "evidence/green-test.log", 0))
+    green_result = stage_result("green_code", "implementer", "pass", "evidence/green-test.log", 0)
+    green_result["lane_results"] = [
+        {"lane_id": "LANE-backend", "wave": 1, "outcome": "completed", "artifact_refs": ["backend/fixture.py", "evidence/green-test.log"]},
+        {"lane_id": "LANE-frontend", "wave": 1, "outcome": "completed", "artifact_refs": ["frontend/fixture.ts", "evidence/green-test.log"]},
+    ]
+    write_json(root, "green-result.json", green_result)
     write_json(root, "refactor-result.json", stage_result("refactor", "refactorer", "pass", "evidence/refactor-test.log", 0))
     write_json(root, "quality-gates.json", {
         "schema_version": "1.0",
@@ -188,7 +210,7 @@ def generate(root: Path) -> None:
         "reviewer_identity": "fixture-independent-verifier",
         "criterion_evidence": [{"sc_id": "SC-1", "status": "PASS", "tests": ["TEST-1"], "evidence_refs": ["evidence/verify-test.log"]}],
         "hard_failures": [],
-        "changed_files": ["fixture.py", "test_fixture.py"],
+        "changed_files": ["backend/fixture.py", "frontend/fixture.ts", "test_fixture.py"],
         "artifact_refs": ["red-result.json", "green-result.json", "refactor-result.json", "evidence/verify-test.log"],
     })
     write_json(root, "convergence-report.json", {
@@ -226,6 +248,9 @@ def generate(root: Path) -> None:
         outcome = "PASS" if stage == "quality_gate" else "CONVERGED" if stage == "converge" else None
         events.append(event(sequence, stage, "stage.completed", ROLES[stage], [stage_artifacts[stage]], outcome=outcome))
         sequence += 1
+        if stage == "plan":
+            events.append(event(sequence, "plan", "lane_plan.resolved", "orchestrator", ["lane-resolution.json"], safe_summary="parallel fixture lanes resolved"))
+            sequence += 1
     events.append(event(sequence, "close", "run.completed", "orchestrator", ["quality-gates.json", "convergence-report.json"], outcome="PASS"))
     write_text(root, "events.jsonl", "\n".join(json.dumps(item, sort_keys=True, separators=(",", ":")) for item in events))
 
