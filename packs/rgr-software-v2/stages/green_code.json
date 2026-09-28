@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "pack_id": "rgr-software",
-  "pack_version": "2.1.0",
+  "pack_version": "2.2.0",
   "stage": "green_code",
   "sequence": 6,
   "role": "implementer",
@@ -9,7 +9,8 @@
     "red-result.json",
     "brainstorm.json",
     "detailed-plan.json",
-    "context-green_code.json"
+    "context-green_code.json",
+    "lane-resolution.json"
   ],
   "output_artifacts": [
     "green-result.json"
@@ -21,7 +22,8 @@
     "canonical-json",
     "schema-validation",
     "append-only-events",
-    "runtime-routing"
+    "runtime-routing",
+    "implementation-lane-resolution"
   ],
   "forbidden_capabilities": [
     "final verdict",
@@ -33,14 +35,18 @@
     "stage result schema valid",
     "every criterion passes",
     "required regressions pass",
-    "self check complete"
+    "self check complete",
+    "all resolved implementation lanes joined",
+    "cross-lane integration regression passes"
   ],
   "failure_classes": [
     "assertion-failure",
     "compile-error",
     "regression",
     "scope-violation",
-    "schema-violation"
+    "schema-violation",
+    "lane-scope-violation",
+    "lane-integration-failure"
   ],
   "context_policy": {
     "manifest_required": true,

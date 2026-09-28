@@ -25,6 +25,22 @@ This Markdown file is a reviewer projection. `detailed-plan.json` is authoritati
 | TASK-2 | green_code | Implement minimum happy-path behaviour | TASK-1 | `<source-path>` | SC-1 | SC-1 test passes |
 | TASK-3 | refactor | Simplify implementation without behaviour change | TASK-2 | `<source-path>` | SC-1 | Full required suite stays green |
 
+## Implementation lanes
+
+Declare lanes only when GREEN tasks can be partitioned cleanly by literal repository path prefix. The deterministic resolver may still serialize them.
+
+| Lane ID | Kind | GREEN tasks | Write surfaces | Depends on lanes |
+|---|---|---|---|---|
+| LANE-backend | backend | TASK-2 | `backend/` | — |
+| LANE-frontend | frontend | TASK-3 | `frontend/` | — |
+
+Rules:
+- every declared GREEN task belongs to exactly one lane;
+- a task output must live beneath its lane's declared write surfaces;
+- lane dependencies are inferred from the task DAG and unioned with explicit lane dependencies;
+- same-wave surface overlap forces sequential fallback;
+- runtime concurrency never changes role authority or the locked plan.
+
 ## Criterion-to-test map
 
 | SC | Planned test IDs | Test type | Expected RED reason |
@@ -46,6 +62,8 @@ This Markdown file is a reviewer projection. `detailed-plan.json` is authoritati
 - [ ] Repository impact and likely tests were considered.
 - [ ] Scope, architecture and compatibility assumptions are explicit.
 - [ ] Canonical JSON status is `locked`.
+- [ ] Explicit GREEN lanes, if declared, partition all GREEN tasks exactly once.
+- [ ] Lane write surfaces are literal relative prefixes and cover planned outputs.
 
 ## VERIFY and CONVERGE expectations
 

@@ -1,15 +1,17 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://agent-dev-pipeline.local/schemas/detailed-plan.schema.json",
-  "title": "Detailed Plan Artifact",
+  "$id": "https://agent-dev-pipeline.local/schemas/lane-resolution.schema.json",
+  "title": "Deterministic Implementation Lane Resolution",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "schema_version",
     "story_id",
-    "status",
-    "tasks",
-    "criterion_test_map"
+    "mode",
+    "reason",
+    "lanes",
+    "waves",
+    "overlap_checks"
   ],
   "properties": {
     "schema_version": {
@@ -20,106 +22,25 @@
       "type": "string",
       "minLength": 1
     },
-    "status": {
+    "mode": {
       "type": "string",
-      "const": "locked"
+      "enum": [
+        "sequential",
+        "parallel"
+      ]
     },
-    "tasks": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "stage",
-          "description",
-          "depends_on",
-          "outputs",
-          "criteria"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^TASK-[0-9]+$"
-          },
-          "stage": {
-            "type": "string",
-            "enum": [
-              "red_test",
-              "green_code",
-              "refactor",
-              "documentation"
-            ]
-          },
-          "description": {
-            "type": "string",
-            "minLength": 5
-          },
-          "depends_on": {
-            "type": "array",
-            "uniqueItems": true,
-            "items": {
-              "type": "string",
-              "pattern": "^TASK-[0-9]+$"
-            }
-          },
-          "outputs": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          "criteria": {
-            "type": "array",
-            "uniqueItems": true,
-            "items": {
-              "type": "string",
-              "pattern": "^SC-[0-9]+$"
-            }
-          }
-        }
-      }
+    "reason": {
+      "type": "string",
+      "minLength": 1
     },
-    "criterion_test_map": {
+    "lanes": {
       "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "sc_id",
-          "test_ids"
-        ],
-        "properties": {
-          "sc_id": {
-            "type": "string",
-            "pattern": "^SC-[0-9]+$"
-          },
-          "test_ids": {
-            "type": "array",
-            "minItems": 1,
-            "uniqueItems": true,
-            "items": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        }
-      }
-    },
-    "implementation_lanes": {
-      "type": "array",
-      "uniqueItems": true,
       "items": {
         "type": "object",
         "additionalProperties": false,
         "required": [
           "id",
           "kind",
-          "description",
           "task_ids",
           "write_surfaces",
           "depends_on_lanes"
@@ -140,10 +61,6 @@
               "generic"
             ]
           },
-          "description": {
-            "type": "string",
-            "minLength": 5
-          },
           "task_ids": {
             "type": "array",
             "minItems": 1,
@@ -155,7 +72,6 @@
           },
           "write_surfaces": {
             "type": "array",
-            "minItems": 1,
             "uniqueItems": true,
             "items": {
               "type": "string",
@@ -168,6 +84,66 @@
             "items": {
               "type": "string",
               "pattern": "^LANE-[A-Za-z0-9_-]+$"
+            }
+          }
+        }
+      }
+    },
+    "waves": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "wave",
+          "lane_ids"
+        ],
+        "properties": {
+          "wave": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "lane_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^LANE-[A-Za-z0-9_-]+$"
+            }
+          }
+        }
+      }
+    },
+    "overlap_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "left_lane",
+          "right_lane",
+          "conflict",
+          "overlap_surfaces"
+        ],
+        "properties": {
+          "left_lane": {
+            "type": "string",
+            "pattern": "^LANE-[A-Za-z0-9_-]+$"
+          },
+          "right_lane": {
+            "type": "string",
+            "pattern": "^LANE-[A-Za-z0-9_-]+$"
+          },
+          "conflict": {
+            "type": "boolean"
+          },
+          "overlap_surfaces": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
             }
           }
         }

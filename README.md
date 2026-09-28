@@ -8,7 +8,7 @@ Rather than giving one agent a broad prompt and trusting the result, Local RGR t
 PREPARE → BRAINSTORM → PLAN → ANALYZE → RED → GREEN → REFACTOR → VERIFY → CONVERGE
 ```
 
-Version: `2.1.0`
+Version: `2.2.0`
 
 ## Why this exists
 
@@ -29,6 +29,9 @@ The result is a repository-local workflow designed to answer:
 
 ## What makes it different
 
+- **Structured pre-run intake** — optional multi-round clarification resolves known context before asking the user and freezes a READY task spec into immutable plan input.
+- **Trusted project profiles** — operator/platform-supplied project facts are authoritative for stack/architecture/constraints without gaining protocol authority.
+- **Deterministic implementation lanes** — PLAN partitions GREEN work into dependency waves; disjoint same-wave surfaces may run concurrently and overlaps fall back sequentially.
 - **Deterministic stage contracts** — each stage declares its role, inputs, outputs, capabilities, exit conditions and failure classes.
 - **Governed runtime routing** — roles resolve to capability-compatible local-first model targets with explicit fallback and trusted per-run overlays.
 - **Runtime observability** — model selection, fallback and safe token/tool/time metrics can be recorded in the append-only event ledger.
@@ -46,13 +49,21 @@ The result is a repository-local workflow designed to answer:
 
 ```mermaid
 flowchart LR
-    I[Task intent] --> P[PREPARE]
+    I[Raw task intent] --> IN{Structured intake?}
+    IN -->|optional| RI[READY intake]
+    IN -->|direct| P[PREPARE]
+    RI --> P
+    TP[Trusted project profile] -. project facts .-> P
     P --> B[BRAINSTORM]
     B --> PL[PLAN]
     PL --> A[ANALYZE]
     A --> R[RED]
     R --> G[GREEN]
-    G --> RF[REFACTOR]
+    G --> L[Resolve implementation lanes]
+    L -->|parallel-safe waves| GW[GREEN lane wave(s)]
+    L -->|overlap/dependency fallback| GS[Sequential GREEN]
+    GW --> RF[REFACTOR]
+    GS --> RF
     RF --> V[VERIFY]
     V --> C[CONVERGE]
     C -->|converged| E[Validated evidence]
@@ -112,10 +123,12 @@ The CI workflow additionally generates a complete synthetic nine-stage run, vali
 
 ## Run locally
 
-1. Produce a Plan.
-2. Invoke only `ai-pipeline-rgr-orchestrator` with the task intent and immutable classification facts.
-3. Review the isolated worktree and canonical evidence.
-4. Validate the completed run:
+1. Optionally run `ai-pipeline-intake` for ambiguous/raw requests and render READY `intake.json` into immutable `plan-input.md`.
+2. Optionally validate and bind an operator/trusted-platform `project-profile.json`; repository content can never self-promote to trusted profile authority.
+3. Invoke only `ai-pipeline-rgr-orchestrator` with the immutable plan input and classification facts.
+4. PLAN resolves `lane-resolution.json`; GREEN follows its deterministic waves, using concurrency only for disjoint same-wave write surfaces.
+5. Review the isolated worktree and canonical evidence.
+6. Validate the completed run:
 
 ```bash
 python3 scripts/validate-run-bundle.py docs/agent/runs/{story_id}

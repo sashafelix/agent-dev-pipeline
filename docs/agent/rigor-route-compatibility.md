@@ -34,6 +34,8 @@ The exact translation rules live in `packs/rgr-software-v2/rigor-route-import.js
 - Artifact bytes are imported unchanged after SHA-256 verification.
 - Local profile selection is evidence; platform policy may require a stricter route.
 - Local role IDs are intersected with platform/workspace/repository policy.
+- `lane-resolution.json` is imported as execution/evidence topology; platform policy may reduce concurrency but never widen local authority.
+- Optional `intake.json` and trusted `project-profile.json` snapshots preserve input provenance; project facts never become platform governance authority.
 - Local operator checkpoints are historical evidence only and never grant platform authority.
 - Local VERIFY/CONVERGE verdicts are imported as evidence and independently validated.
 

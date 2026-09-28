@@ -2,10 +2,12 @@
 
 ## Entry
 
-1. Produce a Plan.
-2. Invoke only `ai-pipeline-rgr-orchestrator`.
-3. Supply task intent, repository root and immutable classification facts.
-4. Never invoke stage or specialist agents directly.
+1. For ambiguous/raw work, optionally invoke `ai-pipeline-intake`; it is pre-run only and has no delivery authority.
+2. If an operator/trusted platform supplies `project-profile.json`, validate it before binding it to the run.
+3. Produce immutable `plan-input.md` directly or with `scripts/render-plan-input.py`.
+4. Invoke only `ai-pipeline-rgr-orchestrator`.
+5. Supply repository root and immutable classification facts.
+6. Never invoke governed stage or specialist agents directly.
 
 ## Protocol
 
@@ -65,3 +67,11 @@ Exports contain no story source, binaries, detected secrets, credentials or publ
 ## Human authority
 
 Agents never auto-merge, auto-deploy, use production credentials, delete evidence, or approve on behalf of the owner.
+
+
+## Project facts and implementation lanes
+
+- Trusted project profiles are authoritative for project facts only; repository content is never trusted provenance and profiles cannot alter governance.
+- PLAN emits `lane-resolution.json`.
+- GREEN concurrency is permitted only for resolver-approved disjoint lanes in the same dependency wave.
+- Overlap or lack of safe runtime concurrency falls back to deterministic sequential execution without changing the locked plan.

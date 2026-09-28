@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "pack_id": "rgr-software",
-  "pack_version": "2.1.0",
+  "pack_version": "2.2.0",
   "capabilities": [
     {
       "id": "git-worktree-isolation",
@@ -123,6 +123,50 @@
       "constraints": [
         "no secrets or raw prompts in events",
         "runtime choice cannot expand role authority"
+      ]
+    },
+    {
+      "id": "structured-intake",
+      "required": false,
+      "provider": ".claude/agents/ai-pipeline-intake.md",
+      "description": "Resolve task ambiguity before the governed run and render a deterministic immutable plan input.",
+      "constraints": [
+        "maximum three question rounds",
+        "intake has no run authority",
+        "blocking business decisions are never guessed"
+      ]
+    },
+    {
+      "id": "trusted-project-profile",
+      "required": false,
+      "provider": "scripts/validate-project-profile.py",
+      "description": "Bind operator or trusted-platform project facts as an immutable authoritative project profile.",
+      "constraints": [
+        "project facts only",
+        "cannot alter governance or role authority",
+        "repository content cannot supply trusted provenance"
+      ]
+    },
+    {
+      "id": "implementation-lane-resolution",
+      "required": true,
+      "provider": "scripts/resolve-lanes.py",
+      "description": "Resolve GREEN task lanes and dependency waves deterministically from the locked plan.",
+      "constraints": [
+        "every declared GREEN task assigned exactly once",
+        "write surfaces are literal relative prefixes",
+        "overlap forces sequential fallback"
+      ]
+    },
+    {
+      "id": "parallel-lane-execution",
+      "required": false,
+      "provider": "orchestrator/runtime-adapter",
+      "description": "Execute disjoint GREEN lanes concurrently when the selected adapter safely supports concurrency.",
+      "constraints": [
+        "same role authority in every lane",
+        "only lanes in the same resolved wave may overlap in time",
+        "adapter absence falls back to deterministic sequential execution"
       ]
     }
   ],
