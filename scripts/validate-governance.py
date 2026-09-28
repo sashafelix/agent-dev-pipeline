@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate local RGR v1.3 governance contracts and cross-file invariants."""
+"""Validate the v1.3 governance subcontracts and cross-file invariants used by the current Local RGR pack."""
 from __future__ import annotations
 
 import json
