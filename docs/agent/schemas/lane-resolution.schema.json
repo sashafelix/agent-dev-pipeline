@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-dev-pipeline.local/schemas/lane-resolution.schema.json",
+  "title": "Deterministic Implementation Lane Resolution",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "story_id",
+    "mode",
+    "reason",
+    "lanes",
+    "waves",
+    "overlap_checks"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "story_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "sequential",
+        "parallel"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lanes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "task_ids",
+          "write_surfaces",
+          "depends_on_lanes"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^LANE-[A-Za-z0-9_-]+$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "backend",
+              "frontend",
+              "mobile",
+              "infrastructure",
+              "migration",
+              "generic"
+            ]
+          },
+          "task_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^TASK-[0-9]+$"
+            }
+          },
+          "write_surfaces": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "depends_on_lanes": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^LANE-[A-Za-z0-9_-]+$"
+            }
+          }
+        }
+      }
+    },
+    "waves": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "wave",
+          "lane_ids"
+        ],
+        "properties": {
+          "wave": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "lane_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^LANE-[A-Za-z0-9_-]+$"
+            }
+          }
+        }
+      }
+    },
+    "overlap_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "left_lane",
+          "right_lane",
+          "conflict",
+          "overlap_surfaces"
+        ],
+        "properties": {
+          "left_lane": {
+            "type": "string",
+            "pattern": "^LANE-[A-Za-z0-9_-]+$"
+          },
+          "right_lane": {
+            "type": "string",
+            "pattern": "^LANE-[A-Za-z0-9_-]+$"
+          },
+          "conflict": {
+            "type": "boolean"
+          },
+          "overlap_surfaces": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}
