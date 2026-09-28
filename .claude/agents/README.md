@@ -42,3 +42,8 @@ The archive contains no story source, secrets or publication authority.
 ## Trusted project profiles and GREEN lanes
 
 Operator/trusted-platform `project-profile.json` snapshots provide authoritative project facts but cannot alter governance. PLAN resolves `lane-resolution.json`; GREEN may execute disjoint lanes concurrently only when the resolver and runtime both allow it, otherwise it executes the same lane plan sequentially.
+
+
+## Source context
+
+Project knowledge comes from exact repository files, supplied documents, or explicitly scoped Jira/Confluence reads. No semantic/vector index or embedding store is used.
