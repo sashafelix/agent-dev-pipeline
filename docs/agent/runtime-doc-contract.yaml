@@ -1,9 +1,9 @@
-version: 8
-contract_id: local-rgr-v2.2
+version: 9
+contract_id: local-rgr-v2.3
 pack:
   manifest: packs/rgr-software-v2/pack.json
   pack_id: rgr-software
-  pack_version: 2.2.0
+  pack_version: 2.3.0
   stage_contract_schema: docs/agent/schemas/stage-contract.schema.json
   capabilities: packs/rgr-software-v2/capabilities.json
   rigor_route_import: packs/rgr-software-v2/rigor-route-import.json
@@ -14,7 +14,7 @@ pre_run:
     agent: ai-pipeline-intake
     schema: docs/agent/schemas/intake.schema.json
     renderer: python3 scripts/render-plan-input.py <intake.json> --output <plan-input.md>
-    max_question_rounds: 3
+    max_question_rounds: 5
     authority: none
   project_profile:
     schema: docs/agent/schemas/project-profile.schema.json
@@ -22,6 +22,12 @@ pre_run:
     allowed_provenance: [operator, trusted_platform]
     authority: project_facts_only
     repository_provenance_forbidden: true
+  source_context:
+    mode: bounded_direct_reads
+    allowed: [repository_documents, supplied_documents, jira, confluence]
+    semantic_index: forbidden
+    embeddings: forbidden
+    background_knowledge_store: forbidden
 workflow:
   entrypoint: ai-pipeline-rgr-orchestrator
   stage_order: [prepare, brainstorm, plan, analyze, red_test, green_code, refactor, quality_gate, converge]
@@ -73,7 +79,7 @@ governance:
     deterministic_scope_selection: true
     authority: advisory
     must_revalidate_against_exact_revision: true
-    retrieval_is_not_evidence: true
+    direct_source_read_is_not_evidence: true
 artifacts:
   write_once:
     plan-input.md: null
