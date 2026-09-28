@@ -1,4 +1,4 @@
-# rgr-software v2.0.0
+# rgr-software v2.2.0
 
 Portable local RGR software-delivery pack.
 
@@ -8,6 +8,8 @@ Portable local RGR software-delivery pack.
 - `capabilities.json` — required/optional runtime capabilities and unsupported features.
 - `rigor-route-import.json` — evidence import and translation contract.
 - `stages/*.json` — nine ordered stage contracts.
+- optional structured pre-run intake and trusted project-profile schemas.
+- deterministic `lane-resolution.json` for GREEN dependency waves and concurrency safety.
 
 ## Validation
 
