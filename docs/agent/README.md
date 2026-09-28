@@ -20,11 +20,14 @@ python3 scripts/validate-pack.py packs/rgr-software-v2/pack.json
 ```text
 docs/agent/runs/{story_id}/
 ├── run-context.md
+├── intake.json                     # optional READY pre-run snapshot
+├── project-profile.json            # optional trusted project-facts snapshot
 ├── plan-input.md
 ├── profile-resolution.json
 ├── repository-intelligence.json
 ├── brainstorm.json
 ├── detailed-plan.json
+├── lane-resolution.json
 ├── analysis-report.json
 ├── specialist-*-review.json       # selected profile only
 ├── red-result.json
@@ -73,3 +76,12 @@ See `rigor-route-compatibility.md`. Local events and artifacts can be imported, 
 ## Safety
 
 No source archive, symlink, binary, detected secret, production credential, automatic merge or deployment is permitted in the portable evidence format.
+
+
+## Pre-run inputs
+
+`intake.json` is optional and must be READY before it can be rendered into immutable `plan-input.md`. `project-profile.json` is optional and accepted only from operator/trusted-platform provenance. Both are evidence inputs; neither grants RGR governance authority.
+
+## Implementation lanes
+
+PLAN always resolves `lane-resolution.json`. Explicit lanes must partition GREEN tasks exactly once. Same-wave literal write surfaces are compared deterministically: conflicts force sequential fallback; disjoint lanes are eligible for concurrent execution when the runtime adapter safely supports it.
