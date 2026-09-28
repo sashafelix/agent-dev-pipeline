@@ -1,6 +1,6 @@
 ---
 name: ai-pipeline-brainstorm
-description: Stage 1 of the pipeline. Refines plan-input into declarative GIVEN/WHEN/THEN success criteria before any code is planned. Orchestrator-invoked only — redirects if called directly.
+description: Stage 2 BRAINSTORM. Refines plan-input into declarative GIVEN/WHEN/THEN success criteria before any code is planned. Orchestrator-invoked only — redirects if called directly.
 ---
 
 # Agent: ai-pipeline-brainstorm
