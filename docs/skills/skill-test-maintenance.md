@@ -11,7 +11,7 @@ Keep backend tests stable, readable, and deterministic. Invoked during REFACTOR 
 ## Reads
 - `docs/conventions/backend-conventions-general.md`
 - `docs/conventions/backend-conventions-testing-style.md`
-- `docs/agent/learnings.md` (filter by `testing:*`)
+- `docs/agent/learnings.json` (filter by `testing:*`)
 - Tests in scope + the production code they cover
 
 ## Writes
