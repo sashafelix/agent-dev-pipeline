@@ -23,7 +23,7 @@ One row per story run. Columns:
 | --- | --- | --- | --- | --- | --- |
 | `<story-id>` | `<YYYY-MM-DD>` | PASS \| FAIL \| WARN | one-line what-shipped / why-failed | `tag`, `tag` | [log](runs/`<story-id>`/decision-log.md) |
 
-`story_id` is whatever identifier the input gave you: a Jira key (e.g., `ACME-123`), a feature slug (`user-profile-avatar-upload`), a request slug (`rag-2026-04-cleanup`), or a RAG-derived task id. Use what `run-context.md > story_id` says; never invent.
+`story_id` is whatever identifier the input gave you: a Jira key (e.g., `ACME-123`), a feature slug (`user-profile-avatar-upload`), a request slug (`source-2026-04-cleanup`), or a direct-source task id. Use what `run-context.md > story_id` says; never invent.
 
 ## Summary construction
 
