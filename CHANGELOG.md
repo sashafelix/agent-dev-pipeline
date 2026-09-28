@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.2.0
+
+- Added optional structured pre-run intake with source/authority/confidence tracking, maximum-three-round clarification, blocker preservation and deterministic `plan-input.md` rendering.
+- Added trusted operator/platform project profiles for authoritative project facts while explicitly denying them governance, runtime, approval or publication authority.
+- Added deterministic GREEN implementation lanes with task assignment validation, inferred lane dependencies, topological waves, literal write-surface overlap checks and sequential safety fallback.
+- Added lane evidence to completed GREEN runs plus `lane_plan.resolved`, `intake.bound` and `project_profile.bound` provenance events.
+- Added CI coverage for trusted-profile validation, READY intake rendering, parallel lane resolution and overlap-triggered sequential fallback.
+
+
 ## 2.1.0
 
 - Added governed local-first runtime routing with exact stage/role routes, capability checks, ordered frontier fallback and trusted per-run overlays.
