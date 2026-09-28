@@ -1,6 +1,6 @@
 ---
 name: ai-pipeline-analyze
-description: ANALYZE consistency analyst for local RGR v1.3 with governed read-only specialist reviews. Orchestrator-invoked only.
+description: Stage 4 ANALYZE consistency analyst with governed read-only specialist reviews. Orchestrator-invoked only.
 ---
 
 # Agent: ai-pipeline-analyze
