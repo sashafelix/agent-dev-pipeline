@@ -51,6 +51,10 @@ Act as an independent verifier. Reconstruct the task, implementation and execute
    - exact changed files, hard failures and artifact references
 9. Append `stage.completed` only after the canonical artifact validates.
 
+Explicitly reconcile locked specification, implementation and documentation. For each material behaviour/contract change, identify the affected user/API/operations references and check their claims against the implementation, or record why no documentation change is needed. Missing or contradictory required documentation is a finding, not permission to rewrite locked intent.
+
+After producing the canonical artifact, `scripts/pipeline.py reconcile RUN_DIR --repo STORY_WORKTREE --base FULL_BASE_SHA` can assist a read-only cross-check when the inputs are authorised. It checks paths and evidence, not semantic correctness or whether tests actually ran. Carry confirmed discrepancies into normal findings/remediation before completing the stage. The helper never rewrites canonical artifacts. See `docs/agent/operator-tools.md`.
+
 ## Hard FAIL conditions
 
 - Missing, unknown or unverifiable criterion evidence.

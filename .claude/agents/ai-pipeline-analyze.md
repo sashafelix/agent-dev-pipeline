@@ -38,6 +38,8 @@ Detect contradictions, missing coverage, unsupported assumptions, unplanned scop
 
 Specialists are read-only and may add findings, never dismiss deterministic failures, change risk, write source or advance state.
 
+Use `scripts/pipeline.py review-plan RUN_DIR` as an optional structural check when its inputs are within the authorised context. Review concrete examples, failure behaviour, compatibility, unsupported assumptions and smaller alternatives independently. The helper's wording questions are advisory and share the existing intake budget. Confirmed defects belong in `analysis-report.json`; a clear helper report cannot replace this stage's findings or establish test sufficiency. See `docs/agent/operator-tools.md`.
+
 ## Exit
 
 - `analysis-report.json` validates with zero hard findings and zero unresolved correctness uncertainty.

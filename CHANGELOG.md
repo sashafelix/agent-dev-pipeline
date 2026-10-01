@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Added optional CLI helpers for five-question project knowledge onboarding, structural plan review and spec/code/docs reconciliation against an explicit Git base.
+- Added create-only reports, bounded path-safe inspection, evidence fingerprints and regression tests for drift and malformed input.
+- Strengthened intake, ANALYZE and VERIFY guidance without changing the nine-stage protocol, profile schema or intake budget.
+- Defined the desktop companion as a configuration-only handoff; execution and approval remain owned by the pipeline.
+
 ## 2.3.0
 
 - Removed the legacy OpenSearch/vector retrieval path, including its shell client, skill definition and `rag-read` capability.

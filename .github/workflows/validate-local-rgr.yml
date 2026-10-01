@@ -46,6 +46,8 @@ jobs:
               assert schema.get('$id'), f'{path}: missing $id'
               print(f'parsed {path}')
           PY
+      - name: Test optional operator tools
+        run: python -m unittest discover -s tests -v
       - name: Validate governance contracts and evaluation corpus
         run: |
           python scripts/validate-governance.py

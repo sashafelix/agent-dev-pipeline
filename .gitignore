@@ -26,3 +26,5 @@ docs/Uploaded-docs/
 .claude/settings.local.json
 
 /.idea/
+__pycache__/
+*.pyc

@@ -43,6 +43,8 @@ Project profiles and user decisions cannot change stage order, role authority, r
 
 ## READY contract
 
+Before READY, challenge only material unresolved assumptions: observable examples and failure behaviour, compatibility, data/security boundaries, the smallest sufficient approach, and affected documentation. Resolve these from known sources first. Questions share the five-round/five-question cap above; no extra review round is implied. A project knowledge index may help locate sources, but its contents remain advisory until checked against the exact revision.
+
 A READY task specification contains:
 
 - title;

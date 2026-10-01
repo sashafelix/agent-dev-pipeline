@@ -10,6 +10,8 @@ PREPARE → BRAINSTORM → PLAN → ANALYZE → RED → GREEN → REFACTOR → V
 
 Version: `2.3.0`
 
+Optional [project setup and review tools](docs/agent/operator-tools.md) provide five-question project notes, locked-plan checks and spec/code/docs reconciliation. The [desktop companion](https://github.com/sashafelix/agent-pipeline-ui) can prepare project configuration; execution and governance remain in this pipeline.
+
 ## Why this exists
 
 AI coding agents are very capable at implementation, but reliable software delivery needs more than code generation. The hard problems are controlling scope, preserving intent, separating implementation from verification, proving what actually ran and making failures recoverable without silently rewriting history.
