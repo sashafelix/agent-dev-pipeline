@@ -1,6 +1,6 @@
 # Decision Index
 
-Compact, append-on-close pointer to every task run's decision log. One row per run. Updated by `skill-decision-index` when `ai-pipeline-quality-gate` closes a run.
+Compact navigation index of the latest closed run for each story. Updated by the orchestrator through `skill-decision-index` after CONVERGE or explicit terminal failure. One row per story; updating this index never changes append-only run evidence.
 
 `Story ID` is whatever identifier the input supplied (Jira key, feature slug, request slug, direct-source task id) — use exactly what was in `run-context.md > story_id`.
 

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Reconciled README/runtime readiness claims, BRAINSTORM canonical JSON instructions, nine-stage templates, lane examples, closure indexing and optional UI configuration handoffs with current contracts.
+- Corrected reference-helper authority, export/redaction limitations and stale backend security, tracing, coverage and integration examples.
+
 - Added a secret-free provider/model configuration schema, strict cross-reference and local-only validation, and the desktop companion export fixture.
 - Added read-only role-routing preflight against independently trusted, binding-hash-pinned adapter registrations; configuration and probe results grant no execution authority.
 

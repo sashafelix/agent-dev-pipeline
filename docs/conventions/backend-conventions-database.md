@@ -2,7 +2,7 @@
 
 **Scope: backend stacks with a SQL persistence layer.** Examples below target PostgreSQL + Flyway. The *safety principles* (forward-only migrations, backfill before NOT NULL, explicit PK/FK/index naming, auditable DDL) generalize to Liquibase / Drizzle / Prisma Migrate / Alembic / ActiveRecord / Knex. See `docs/skills/skill-database.md` for the stack-agnostic variant.
 
-Applies to: `ai-pipeline-database`, `ai-pipeline-contract-guard`, `ai-pipeline-green-code` (when migration changes are needed).
+Applies to: relevant stage agents through the matching `docs/skills/` helpers. Helpers inherit the caller’s role and write limits; verification helpers inspect and report only.
 
 ## Migration Naming
 - Format: `V{YYYYMMDDHHMM}__description.sql`
@@ -10,7 +10,7 @@ Applies to: `ai-pipeline-database`, `ai-pipeline-contract-guard`, `ai-pipeline-g
   - `V202310131548__create_schema.sql`
 
 ## Schema + DDL Rules
-- Use schema `ai_pipeline`.
+- Follow the existing project schema; `ai_pipeline` below is an illustrative name.
 - Forward-only migrations.
 - Deterministic SQL (no environment-specific behavior).
 - Explicit PK/FK/index names.
@@ -68,8 +68,8 @@ spring:
   flyway:
     enabled: true
     validate-on-migrate: true
-    baseline-on-migrate: true
-    out-of-order: true
+    baseline-on-migrate: false
+    out-of-order: false
     schemas: ai_pipeline
 ```
 
@@ -80,6 +80,7 @@ spring:
 ## Verification
 - Migrations run clean on empty database.
 - No hidden manual patch steps.
-- Test with H2 in PostgreSQL compatibility mode for unit tests.
+- Verify migrations against the actual target database engine/version using isolated test infrastructure. H2 compatibility mode can support focused tests but does not prove PostgreSQL DDL, locking or migration compatibility.
+- Enable baselining or out-of-order migrations only through an explicit, reviewed migration plan.
 
 

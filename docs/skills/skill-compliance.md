@@ -4,7 +4,7 @@
 Capture traceable evidence for security, quality, and release controls. Every compliance claim must link to a specific file, test, commit, or contract.
 
 ## When invoked
-- By `ai-pipeline-quality-gate` during the final VERIFY stage.
+- By `ai-pipeline-quality-gate` during VERIFY, before CONVERGE.
 - By `ai-pipeline-green-code` when a story touches a regulated concern (auth, PII, audit logging, cryptography, financial data).
 
 ## Reads
@@ -12,22 +12,22 @@ Capture traceable evidence for security, quality, and release controls. Every co
 - `docs/conventions/backend-conventions-quality-ops.md`
 - `docs/conventions/backend-conventions-security.md`
 - `docs/agent/learnings.json` (filter by `compliance:*`, `security:*`, `audit:*`)
-- Run folder: `handoff.md`, `quality-gates.md`, `decision-log.md`, `brainstorm.md`
+- Run folder: canonical `quality-gates.json`, `brainstorm.json`, stage results and append-only handoff/decision records
 - Direct sources: linked security/IAM/AI standards, supplied documents, or repository Markdown; retain the exact file/page/URL reference
 
 ## Writes
 - Compliance notes in `docs/agent/runs/{story_id}/decision-log.md`
-- Evidence summary block inserted into `quality-gates.md` by the calling agent
+- Evidence references recorded in canonical gate/stage artifacts; the calling agent projects the summary into `quality-gates.md`. During VERIFY, do not edit story code.
 
 ## Evidence Checklist
 
 Every entry below must have a concrete link (file path, test name, commit, migration ID, direct-source reference). No hand-wavy "we follow the standard" claims.
 
 ### 1. Security controls
-- [ ] Authentication required on new endpoints? Proof: `@PreAuthorize` on controller, security test asserting 401/403.
+- [ ] Authentication required on new endpoints? Proof: configured authentication entry point and an unauthenticated-request test; `@PreAuthorize` concerns method authorization and requires method security to be enabled.
 - [ ] Authorization correct per role? Proof: positive + negative test per role.
 - [ ] Input validation? Proof: `@Valid` annotation + negative test for invalid payload.
-- [ ] Output sanitization for sensitive data? Proof: `LogSanitizer` usage + log assertion.
+- [ ] Output sanitization for sensitive data? Proof: explicit omission/masking policy and assertions on actual output. Newline sanitization alone does not redact secrets or PII.
 - [ ] Secrets handling? Proof: env-var reference, no literal in config.
 
 ### 2. Audit + traceability
@@ -37,7 +37,7 @@ Every entry below must have a concrete link (file path, test name, commit, migra
 
 ### 3. Data handling
 - [ ] PII/PHI fields identified? Proof: list in decision-log.
-- [ ] PII not logged? Proof: `LogSanitizer` usage + negative log test.
+- [ ] PII not logged? Proof: allowed log fields or explicit masking plus negative tests for sensitive values.
 - [ ] PII not returned in public-facing DTOs? Proof: DTO shape review + contract test.
 - [ ] Data retention rule considered? Proof: cleanup job, TTL, or explicit decision-log entry "not applicable because ...".
 
@@ -50,7 +50,7 @@ Every entry below must have a concrete link (file path, test name, commit, migra
 - [ ] Unit tests cover changed business logic.
 - [ ] Integration test if external systems involved.
 - [ ] Security test if authz touched.
-- [ ] Coverage ≥ 80% on touched modules (no regression).
+- [ ] Coverage ≥ the recorded project threshold on touched modules (no regression).
 
 ### 6. Release-readiness
 - [ ] Feature flag required? Documented + test asserts both states.
@@ -70,12 +70,12 @@ The calling agent inserts this into `quality-gates.md`:
 | AuthZ per role | ✓ | `OrderControllerTest#create_asClerk_returns403` |
 | Input validation | ✓ | `OrderControllerTest#create_invalidPayload_returns400` |
 | Audit log | ✓ | `OrderServiceTest#create_logsAuditEntry` |
-| PII sanitization | ✓ | `LogSanitizerTest#sanitize_maskCustomerId` |
+| PII sanitization | ✓ | `OrderLoggingTest#omitsCustomerIdentifiers` |
 | OpenAPI compatible | ✓ | `skill-contract-guard` output → `handoff.md` |
-| Coverage ≥ 80% | ✓ | JaCoCo report → `target/site/jacoco/` |
+| Coverage ≥ the recorded project threshold | ✓ | JaCoCo report → `target/site/jacoco/` |
 ```
 
-Every row with `✗` or `WARN` must be accompanied by an explicit justification in decision-log and an approval note.
+Every failed control needs a blocking finding and evidence. Only non-correctness preferences may be WARN with rationale; an approval note cannot waive a required security or correctness gate.
 
 ## Guardrails
 - Evidence must be traceable to a file, test, or commit. "We followed the standard" is not evidence.

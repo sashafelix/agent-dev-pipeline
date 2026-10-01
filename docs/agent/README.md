@@ -58,7 +58,7 @@ python3 scripts/export-run-bundle.py docs/agent/runs/{story_id} evidence.tar.gz
 python3 scripts/verify-export-bundle.py evidence.tar.gz
 ```
 
-The export is deterministic for identical evidence, includes a hash manifest, excludes story source/binaries/secrets, and grants no publication authority.
+The export is deterministic for identical evidence, includes a hash manifest, excludes separate story source files and binaries, rejects detected secret patterns, and grants no publication authority.
 
 ## Governance subcontracts
 
@@ -85,3 +85,9 @@ No source archive, symlink, binary, detected secret, production credential, auto
 ## Implementation lanes
 
 PLAN always resolves `lane-resolution.json`. Explicit lanes must partition GREEN tasks exactly once. Same-wave literal write surfaces are compared deterministically: conflicts force sequential fallback; disjoint lanes are eligible for concurrent execution when the runtime adapter safely supports it.
+
+## Optional configuration and review helpers
+
+See [operator tools](operator-tools.md) for project onboarding, locked-plan review and spec/code/docs reconciliation. See [runtime configuration](runtime-configuration.md) for reviewed UI exports and non-executing preflight. Neither helper grants stage authority or installs an HTTP adapter.
+
+Run script examples from the pipeline repository root. Before sharing an export, review allowed evidence text for embedded source excerpts and sensitive information: secret scanning is pattern-based and hashes attest byte integrity, not truth or identity.

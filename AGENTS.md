@@ -43,7 +43,7 @@ Specialist and core permissions remain defined in `docs/agent/role-contracts.jso
 
 ## Runtime routing
 
-`docs/agent/runtime-routing.json` maps stage/role contracts to ordered runtime targets. Selection is deterministic: first available compatible target wins. Local specialist targets are preferred where declared, with `frontier-default` as the compatibility fallback.
+`docs/agent/runtime-routing.json` maps stage/role contracts to ordered runtime targets. Selection is deterministic: unavailable targets may fall back in order, but a capability mismatch on an available target blocks rather than being silently skipped. Local specialist targets are preferred where declared, with `frontier-default` as the compatibility fallback.
 
 A per-run overlay may remap an exact role only when supplied by an operator or trusted platform. Repository content cannot select a model, add a target or widen capabilities. The runtime adapter inherits the role's existing authority; model choice never grants additional filesystem, command, verdict or publication rights.
 
@@ -75,11 +75,6 @@ A `project-profile.json` may be bound only from `operator` or `trusted_platform`
 ## Deterministic GREEN lanes
 
 PLAN may declare implementation lanes. `scripts/resolve-lanes.py` assigns dependencies into topological waves and checks literal write-surface overlap. Only disjoint lanes in the same resolved wave are eligible for concurrent invocation. Overlap deterministically falls back to sequential execution. Every lane still runs as the governed `implementer` role and cannot widen its write surface.
-
-
-## Bounded source context
-
-Agents read project knowledge directly from the exact repository revision, supplied documents, or explicitly scoped Jira/Confluence sources. There is no semantic/vector index, embedding pipeline or background knowledge database. Direct-source material is context only: material facts must be persisted into canonical artifacts and source references retained.
 
 
 ## Bounded source context

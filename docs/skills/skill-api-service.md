@@ -32,7 +32,7 @@ public class OrderController {
     @PostMapping
     @PreAuthorize("hasAuthority('ORDER_CREATE')")
     public ResponseEntity<OrderDto> createOrder(@Valid @RequestBody CreateOrderRequest request) {
-        log.info("Creating order: {}", LogSanitizer.getSanitizedStringForLogging(request.toString()));
+        log.info("Creating order"); // correlation ID supplied by the logging context
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create(request));
     }
 }
@@ -45,7 +45,7 @@ public class OrderController {
 - Use `ResponseEntity<T>` for status control.
 - Use `@Valid` on `@RequestBody`.
 - Use `@PreAuthorize` for role-based access.
-- Sanitize user input in logs with `LogSanitizer`.
+- Log only approved non-sensitive fields. `LogSanitizer` removes control characters; it does not mask secrets, PII or full request bodies.
 
 ### OpenAPI Documentation
 ```java

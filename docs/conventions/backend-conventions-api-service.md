@@ -2,7 +2,7 @@
 
 **Scope: backend stacks** (invoke when `run-context.md > stack` is `backend-*`). Examples below target Java + Spring; translate idioms to Node/Python/Go/.NET as needed. The *principles* — thin controllers, business logic in services, DTO separation, explicit error model, sanitized logs, documented contracts — apply to any backend.
 
-Applies to: `ai-pipeline-api`, `ai-pipeline-green-code`, `ai-pipeline-contract-guard` (via `skill-api-service`).
+Applies to: relevant stage agents through the matching `docs/skills/` helpers. Helpers inherit the caller’s role and write limits; verification helpers inspect and report only.
 
 ## Controllers
 
@@ -24,9 +24,9 @@ Applies to: `ai-pipeline-api`, `ai-pipeline-green-code`, `ai-pipeline-contract-g
 - Match parameter names to path variable names.
 
 ### Input Sanitization
-- **Always** sanitize user-controlled values before logging:
+- Choose approved non-sensitive fields before logging; omit or mask sensitive values. `LogSanitizer` only removes control characters:
 ```java
-log.info("Request: {}", LogSanitizer.getSanitizedStringForLogging(userInput));
+log.info("Operation: {}", LogSanitizer.getSanitizedStringForLogging(safeOperationName));
 ```
 
 ### Structured Logging Keys
@@ -64,7 +64,7 @@ private static Supplier<EntityNotFoundException> getNotFoundExceptionSupplier(Lo
 ## Error Model
 - Use global exception handler (`@RestControllerAdvice`).
 - Return consistent `ApiError` response structure.
-- Include timestamp, status, message, debug info.
+- Include timestamp, status, a safe public message and a correlation identifier. Keep internal debug details in appropriately protected diagnostics.
 - Sub-errors for validation failures.
 - Avoid leaking internal stack details in API responses.
 - Use `ResponseStatusException` for simple inline error cases.

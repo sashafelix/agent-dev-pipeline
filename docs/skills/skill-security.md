@@ -15,32 +15,9 @@ Apply backend security controls for endpoints, data access, and logging.
 
 ## Security Configuration
 
-### Filter Chain (Non-Local)
-```java
-@Bean
-@Profile("!local")
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.cors(Customizer.withDefaults())
-        .csrf(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/swagger-ui/**", "/v3/**", "/actuator/**").permitAll()
-            .anyRequest().authenticated())
-        .addFilterBefore(customAuthFilter, UsernamePasswordAuthenticationFilter.class);
-    return http.build();
-}
-```
+Use the project's authentication mechanism with fail-closed authorization, explicit endpoint policy and applicable CSRF protection. See `docs/conventions/backend-conventions-security.md` for the shared rules. Do not blanket-permit Actuator/docs endpoints or copy a permit-all local profile into a shared environment.
 
-### Filter Chain (Local Development)
-```java
-@Bean
-@Profile("local")
-public SecurityFilterChain securityFilterChainLocal(HttpSecurity http) throws Exception {
-    http.cors(Customizer.withDefaults())
-        .csrf(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-    return http.build();
-}
-```
+`@PreAuthorize` requires method security to be enabled; test with the actual application security configuration, not only an annotation in isolation.
 
 ### Authorization Annotations
 ```java
@@ -71,9 +48,9 @@ public final class LogSanitizer {
 }
 ```
 
-Usage (mandatory for user input in logs):
+This removes control characters only; it does not redact secrets or PII. First select approved non-sensitive fields, then sanitize those fields if needed. Never log raw user input or whole request bodies. Example for an already approved non-sensitive value:
 ```java
-log.info("Request: {}", LogSanitizer.getSanitizedStringForLogging(userInput));
+log.info("Operation: {}", LogSanitizer.getSanitizedStringForLogging(safeOperationName));
 ```
 
 ## Security Testing
@@ -112,6 +89,6 @@ class OrderControllerSecurityTest {
 ## Guardrails
 - Fail closed: deny by default, permit explicitly.
 - No secret exposure in logs, errors, or responses.
-- Log safely using `LogSanitizer` for all user-supplied input.
+- Omit/mask sensitive fields before logging; `LogSanitizer` only handles control characters.
 - Test both positive (authorized) and negative (unauthorized) access paths.
-- Profile-based security: `local` profile permits all for development only.
+- Use test identities for development; a local profile is not a security boundary.

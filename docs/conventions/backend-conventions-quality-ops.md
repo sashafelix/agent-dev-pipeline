@@ -1,12 +1,12 @@
 # Backend Conventions — Quality, Observability, DevOps, Compliance
 
-**Scope: backend stacks.** Examples below target Java + Maven + Spring Boot (JaCoCo, Sleuth, Logback, Spring Actuator). The *principles* — coverage target with exclusions for trivial classes, structured logging with traceable prefixes, profile-based config, externalized secrets, traceability from requirement → code → test → release — apply to any stack. Translate the mechanisms:
+**Scope: backend stacks.** Examples below target Java + Maven + Spring Boot (JaCoCo, Micrometer Tracing, Logback, Spring Actuator). The *principles* — coverage target with exclusions for trivial classes, structured logging with traceable prefixes, profile-based config, externalized secrets, traceability from requirement → code → test → release — apply to any stack. Translate the mechanisms:
 - Coverage: JaCoCo → c8 / Istanbul (Node), coverage.py (Python), `go test -cover`, Coverlet (.NET)
-- Tracing: Sleuth → OpenTelemetry SDK (any stack)
+- Tracing: Micrometer Tracing → OpenTelemetry SDK (any stack)
 - Logging: Logback → pino/winston (Node), structlog (Python), zap/zerolog (Go), Serilog (.NET)
 - Profiles: Spring profiles → `NODE_ENV`/dotenv, `APP_ENV`, Go build tags, ASP.NET environments
 
-Applies to: `ai-pipeline-contract-guard`, `ai-pipeline-observability`, `ai-pipeline-devops`, `ai-pipeline-compliance`, `ai-pipeline-architecture-decisions`.
+Applies to: relevant stage agents through the matching `docs/skills/` helpers. Helpers inherit the caller’s role and write limits; verification helpers inspect and report only.
 
 ## Contract Guard
 - Validate API and schema compatibility.
@@ -19,18 +19,24 @@ Applies to: `ai-pipeline-contract-guard`, `ai-pipeline-observability`, `ai-pipel
 <plugin>
     <groupId>org.jacoco</groupId>
     <artifactId>jacoco-maven-plugin</artifactId>
-    <version>0.8.12</version>
+    <version>${jacoco.version}</version> <!-- approved project-managed version -->
     <executions>
         <execution>
+            <id>prepare-coverage</id>
+            <goals><goal>prepare-agent</goal></goals>
+        </execution>
+        <execution>
+            <id>coverage-report</id>
+            <phase>verify</phase>
             <goals><goal>report</goal></goals>
         </execution>
         <execution>
             <id>jacoco-check</id>
-            <phase>test</phase>
+            <phase>verify</phase>
             <goals><goal>check</goal></goals>
             <configuration>
                 <excludes>
-                    <exclude>com/example/*/model/**/*.class</exclude>
+                    <exclude>com/example/generated/**</exclude>
                 </excludes>
                 <rules>
                     <rule>
@@ -51,9 +57,9 @@ Applies to: `ai-pipeline-contract-guard`, `ai-pipeline-observability`, `ai-pipel
 ```
 
 ### Coverage Exclusions
-Exclude model/DTO packages from coverage requirements:
-- `com/*/model/**/*.class`
-- Generated mapper implementations
+Use only project-approved exclusions for generated or demonstrably trivial code. Do not exclude all model/DTO packages when they contain logic. The 80% threshold above is illustrative, not a pipeline-wide requirement.
+
+Run the Maven `verify` lifecycle with a forked test JVM and retain the JaCoCo agent arguments if Surefire/Failsafe configures `argLine`; otherwise coverage may be absent. See [JaCoCo Maven documentation](https://www.jacoco.org/jacoco/trunk/doc/maven.html).
 
 ## Maven Profiles
 ```xml
@@ -85,17 +91,13 @@ Exclude model/DTO packages from coverage requirements:
 <dependency>
     <groupId>net.logstash.logback</groupId>
     <artifactId>logstash-logback-encoder</artifactId>
-    <version>7.0.1</version>
+    <version>${logstash-logback-encoder.version}</version> <!-- project-managed -->
 </dependency>
 ```
 
-### Distributed Tracing (Spring Cloud Sleuth)
-```xml
-<dependency>
-    <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-starter-sleuth</artifactId>
-</dependency>
-```
+### Distributed tracing
+
+For the Spring Boot 3 reference stack, use Micrometer Tracing with a supported bridge and exporter selected through the project's dependency management. Do not add the older `spring-cloud-starter-sleuth` starter to a Boot 3 application. See [Spring Boot 3 tracing](https://docs.spring.io/spring-boot/3.5/reference/actuator/tracing.html).
 
 ### Log Prefixes for Traceability
 - `RPA-API-REQUEST-*`: API request logging
@@ -103,23 +105,25 @@ Exclude model/DTO packages from coverage requirements:
 - `RPA-TNS-GO-*`: External integration
 
 ### Actuator Configuration
+
+Start with minimal exposure. Add metrics or other endpoints only under the project’s authentication/network policy; exposure is separate from authorization.
 ```yaml
 management:
   endpoints:
     web:
       exposure:
-        include: '*'
+        include: health
   endpoint:
     health:
       probes:
         enabled: true
-      show-details: always
+      show-details: never
 ```
 
 ### Observability Rules
 - Add meaningful structured logs for key business flow transitions.
 - Add metrics/traces for critical paths and failure points.
-- Avoid sensitive data in logs (use `LogSanitizer`).
+- Omit/mask sensitive fields before logging; `LogSanitizer` only removes control characters.
 
 ## Caching
 ```java

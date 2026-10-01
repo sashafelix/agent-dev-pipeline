@@ -28,6 +28,8 @@ Append-only reviewer projection. Canonical stage state lives in JSON artifacts a
 - agent: ai-pipeline-rgr-orchestrator
 - timestamp:
 - canonical_artifact: detailed-plan.json
+- lane_resolution: lane-resolution.json
+- resolved_waves:
 - status: locked
 - task_count:
 - criterion_test_map_complete: y/n
@@ -61,6 +63,7 @@ Append-only reviewer projection. Canonical stage state lives in JSON artifacts a
 - actor_role: implementer
 - timestamp:
 - canonical_artifact: green-result.json
+- lane_execution_summary:
 - files_read:
 - patterns_searched:
 - reuse_decisions:

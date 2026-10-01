@@ -12,7 +12,7 @@ Apply CI/CD, pipeline, and runtime/deployment configuration changes that fall wi
 - `docs/conventions/backend-conventions-quality-ops.md`
 - `docs/agent/learnings.json` (filter by `infra:*`, `deploy:*`, `ci:*`, `secrets:*`)
 - Existing pipeline / Helm / Dockerfile / profile config
-- Runtime requirements in `brainstorm.md` or `detailed-plan.md`
+- Runtime requirements in `brainstorm.json` or `detailed-plan.json`
 
 ## Writes
 - Pipeline, Helm, Dockerfile, profile config files in scope
@@ -33,7 +33,7 @@ Apply CI/CD, pipeline, and runtime/deployment configuration changes that fall wi
 ### 3. Image + dependency pinning
 - Docker images pinned to a specific tag or digest. No `:latest`.
 - Base image aligned with the team standard (documented or inherited from parent image).
-- If a new dependency is added, it must resolve against the approved mirror (Nexus) — check `learnings.json` for credential workarounds.
+- Resolve new dependencies through the project’s approved registries/mirrors. Revalidate any learned configuration; never use learned credential workarounds or bypass access controls.
 
 ### 4. Resource + runtime limits
 - Memory/CPU requests and limits set explicitly (Kubernetes).
@@ -41,8 +41,8 @@ Apply CI/CD, pipeline, and runtime/deployment configuration changes that fall wi
 - No change to resource limits without load-test or quality-gate evidence.
 
 ### 5. Health + readiness
-- Every new deploy exposes `/actuator/health` (liveness) and `/actuator/readiness`.
-- Health-check endpoints are unauthenticated and internal-only.
+- Use the target platform’s probe contract. In the Spring Boot reference with health probes enabled, the default paths are `/actuator/health/liveness` and `/actuator/health/readiness`; `/actuator/health` is aggregate health. See [Actuator endpoints](https://docs.spring.io/spring-boot/reference/actuator/endpoints.html).
+- If probes require unauthenticated access, expose only the exact probe endpoints on an appropriately restricted network; never permit all `/actuator/**` endpoints by default.
 - Deploy rollout blocks on readiness probe — document expected readiness time.
 
 ### 6. Observability at deploy layer

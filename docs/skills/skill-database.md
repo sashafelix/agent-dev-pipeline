@@ -36,14 +36,14 @@ Examples:
 |-------------|-------|----------|
 | CREATE TABLE | ✅ Yes | — |
 | ADD COLUMN (nullable) | ✅ Yes | — |
-| ADD COLUMN (NOT NULL + default) | ✅ Yes | Default value |
+| ADD COLUMN (NOT NULL + default) | ⚠️ Caution | Engine/version, default evaluation, locking and data-volume checks |
 | ADD COLUMN (NOT NULL, no default) | ❌ No | Backfill first |
 | DROP COLUMN | ❌ No | Explicit approval + deprecation period |
 | RENAME COLUMN | ❌ No | Explicit approval + app code change |
 | ALTER COLUMN TYPE (widening) | ⚠️ Caution | Test data compatibility |
 | ALTER COLUMN TYPE (narrowing) | ❌ No | Data migration plan |
 | DROP TABLE | ❌ No | Explicit approval + backup |
-| CREATE INDEX | ✅ Yes | Consider CONCURRENTLY for large tables |
+| CREATE INDEX | ⚠️ Caution | Locking/volume review; use the engine’s supported online/concurrent mode where appropriate |
 | DROP INDEX | ⚠️ Caution | Verify no query relies on it |
 | ADD CONSTRAINT (FK) | ⚠️ Caution | Ensure data integrity first |
 | ADD CONSTRAINT (CHECK) | ⚠️ Caution | Validate existing data |
@@ -70,7 +70,7 @@ When adding NOT NULL column to existing table:
 4. Document in decision log.
 
 ## Rollback Considerations
-- Most migration tools are forward-only by default (Flyway, Alembic's `autogenerate`, Drizzle).
+- This workflow prefers forward repair. Tool capabilities differ: some support explicit downgrade/undo scripts; generation of a migration does not prove reversal is safe.
 - For critical changes, create a separate "undo" migration script (not auto-executed).
 - Document rollback steps in decision log for destructive changes.
 
@@ -79,7 +79,7 @@ When adding NOT NULL column to existing table:
 - Explicit PK/FK/index strategy.
 - No destructive changes without explicit approval in decision log.
 - Test migrations against production-like data volume.
-- Use `CREATE INDEX CONCURRENTLY` for large tables in production.
+- For PostgreSQL, consider `CREATE INDEX CONCURRENTLY` for large live tables and configure the migration outside a transaction as required. Validate failures and cleanup; this is not a portable SQL option.
 
 
 

@@ -8,7 +8,7 @@ Examples below target JUnit 5 + Spring's `@WebMvcTest` / `@SpringBootTest` / `@W
 - Go `testing`: table-driven tests, `httptest`
 - Playwright / Cypress: e2e over authenticated flows
 
-Applies to: `ai-pipeline-red-test`, `ai-pipeline-green-code`, `ai-pipeline-refactor`, `ai-pipeline-security`, `ai-pipeline-contract-guard`.
+Applies to: relevant stage agents through the matching `docs/skills/` helpers. Helpers inherit the caller’s role and write limits; verification helpers inspect and report only.
 
 ## Naming
 - Test method format: `method_condition_expectedBehavior`.
@@ -139,7 +139,7 @@ private static OutletOverview mockOutletOverview() {
 
 ## RED Stage Rules
 - New tests must fail for expected reason before implementation.
-- Document failing evidence in `handoff.md`.
+- Record actual failing commands/results in canonical stage-result evidence; summarize references in `handoff.md`.
 - Failure reason must match expected business gap.
 
 ## GREEN/REFACTOR Rules
@@ -152,6 +152,8 @@ private static OutletOverview mockOutletOverview() {
 - Verify interactions: `verify(mock, times(n)).method()`.
 
 ## Test Configuration
+
+The H2 example is for isolated tests only; with Flyway disabled it provides no migration evidence. Run real-engine migration/integration checks separately when required.
 ```yaml
 # src/test/resources/application.yml
 spring:
@@ -167,6 +169,8 @@ spring:
 ```
 
 ## Minimal Test Skeleton
+
+Include a test identity and CSRF token where required by the real security configuration, so an intended validation test does not fail at authentication/CSRF first.
 ```java
 @Test
 void createCase_withInvalidPayload_shouldReturnBadRequest() throws Exception {

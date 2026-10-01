@@ -1,8 +1,8 @@
 # Backend Conventions — Java Style
 
-**Scope: Java/Spring backends only.** Invoke when `run-context.md > stack` is `backend-java`. The *Code Simplicity Rules* at the bottom of this file (small functions, Rule of Three, no dead code, don't-mock-what-you-don't-own) are universal and echoed in `CLAUDE.md`; everything else in this file is Java-specific.
+**Scope: Java/Spring backends only.** Invoke when `run-context.md > stack` is `backend-java`. The *Code Simplicity Rules* at the bottom of this file (small functions, Rule of Three, no dead code, don't-mock-what-you-don't-own) are general review guidance; everything else in this file is Java-specific.
 
-Applies to: `ai-pipeline-green-code`, `ai-pipeline-refactor`, `ai-pipeline-api`, `ai-pipeline-entity`, `ai-pipeline-security`, `ai-pipeline-integration` — *when the target stack is Java*.
+Applies to: relevant stage agents through the matching `docs/skills/` helpers. Helpers inherit the caller’s role and write limits; verification helpers inspect and report only.
 
 ## Class and Dependency Style
 - Constructor injection only (`@RequiredArgsConstructor`).
@@ -34,7 +34,7 @@ public class MyService { ... }
 @PreAuthorize("hasAuthority('User')")
 @PutMapping("/outlet")
 public void updateMetadata(@Valid @RequestBody UpdateMetadataRequest request) {
-    log.debug("updating metadata {}", LogSanitizer.getSanitizedStringForLogging(request.toString()));
+    log.debug("Updating metadata"); // correlation ID comes from logging context
     request.getMetadataList().forEach(metadataService::updateMeta);
 }
 ```
@@ -73,7 +73,7 @@ return repository.findById(id)
     .orElseThrow(getNotFoundSupplier(id));
 
 // flatMap for nested Optionals
-.flatMap(c -> Optional.of(c.getEmail()))
+.flatMap(c -> Optional.ofNullable(c.getEmail()))
 .orElse("");
 
 // ifPresentOrElse for branching
@@ -98,7 +98,7 @@ try (CustomZipInputStream zis = new CustomZipInputStream(inputStream)) {
 ### Parameterized Logging
 ```java
 log.info("Processing outlet: {} with status: {}", outletId, status);
-log.debug("Request details: {}", LogSanitizer.getSanitizedStringForLogging(request.toString()));
+log.debug("Request accepted"); // do not log the request body
 log.error("RPA-ERROR-IMPORT: {}", e.getLocalizedMessage(), e);
 ```
 
@@ -110,7 +110,7 @@ Use consistent prefixes for traceability:
 
 ### Rules
 - Never log secrets/tokens.
-- Sanitize user input in logs using `LogSanitizer`.
+- Omit/mask sensitive data; sanitize control characters only in approved non-sensitive fields. `LogSanitizer` is not a redactor.
 - Include exception with stack trace: `log.error("msg: {}", e.getMessage(), e)`.
 
 ## AtomicInteger for Stream Counters

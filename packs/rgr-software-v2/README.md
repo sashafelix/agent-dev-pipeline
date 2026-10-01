@@ -14,6 +14,8 @@ Portable local RGR software-delivery pack.
 
 ## Validation
 
+Run from the repository root. Pack validation checks contracts; it does not run a model.
+
 ```bash
 python3 scripts/validate-pack.py packs/rgr-software-v2/pack.json
 ```
@@ -22,7 +24,7 @@ The validator checks manifest/schema validity, stage order, role and capability 
 
 ## Integrity
 
-The repository pack may remain unsigned for local use. `validate-pack.py` computes and reports deterministic SHA-256 values. Rigor Route may require a signed and activated manifest before executing the pack.
+The repository pack may remain unsigned for local use. `validate-pack.py` computes deterministic SHA-256 values. Pass `--hash-report /path/to/pack-hashes.json` to write the per-stage and manifest values; default stdout reports the validation result and stage count. Rigor Route may require a signed and activated manifest before executing the pack.
 
 ## Publication
 

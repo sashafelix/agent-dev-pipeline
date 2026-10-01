@@ -12,4 +12,4 @@ branch: <none>
 run_path: <none>
 ```
 
-See `docs/agent/templates/current-run.template.md` for the populated schema.
+See `docs/agent/templates/current-run.template.md` for the reviewer template (the canonical JSON schemas live under `docs/agent/schemas/`).

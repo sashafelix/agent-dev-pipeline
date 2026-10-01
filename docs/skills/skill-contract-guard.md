@@ -35,7 +35,7 @@ Detect and classify API/DTO/DB contract changes as breaking or non-breaking.
 | Field renamed | Yes | FAIL |
 | Field type changed | Yes | FAIL |
 | Field removed from response | Yes | FAIL |
-| Validation constraint tightened | Yes (may reject previously valid input) | WARN |
+| Validation constraint tightened | Yes (may reject previously valid input) | FAIL |
 | New optional field | No | PASS |
 
 ### Database Contract
