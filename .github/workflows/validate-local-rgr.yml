@@ -103,10 +103,23 @@ jobs:
           python scripts/validate-project-profile.py /tmp/project-profile.json --expected-project-id ci-project
 
           cat > /tmp/intake.json <<'JSON'
-          {"schema_version":"1.0","intake_id":"CI-INTAKE","rounds":1,"status":"ready","raw_request":"Add a bounded fixture feature","project_profile_ref":"project-profile.json","resolved":[{"field":"database","value":"postgres","source":"trusted_project_profile","source_ref":"project-profile.json","confidence":"high","authority":"authoritative"}],"questions":[],"task_spec":{"title":"Fixture feature","description":"Add a bounded fixture feature.","requirements":["Keep behaviour deterministic"],"constraints":["No production credentials"],"acceptance_criteria":["Given fixture input, fixture output is returned"],"user_decisions":{}}}
+          {"schema_version":"1.0","intake_id":"CI-INTAKE","rounds":5,"status":"ready","raw_request":"Add a bounded fixture feature","project_profile_ref":"project-profile.json","resolved":[{"field":"database","value":"postgres","source":"trusted_project_profile","source_ref":"project-profile.json","confidence":"high","authority":"authoritative"}],"questions":[],"task_spec":{"title":"Fixture feature","description":"Add a bounded fixture feature.","requirements":["Keep behaviour deterministic"],"constraints":["No production credentials"],"acceptance_criteria":["Given fixture input, fixture output is returned"],"user_decisions":{}}}
           JSON
           python scripts/render-plan-input.py /tmp/intake.json --output /tmp/plan-input.md
           grep -q 'source: structured-intake' /tmp/plan-input.md
+
+          echo 'Reject intake beyond five rounds'
+          python - <<'PY'
+          import json, sys
+          sys.path.insert(0, 'scripts')
+          from schema_validation import validate_instance
+          schema=json.load(open('docs/agent/schemas/intake.schema.json'))
+          doc=json.load(open('/tmp/intake.json'))
+          assert validate_instance(doc, schema) == []
+          doc['rounds']=6
+          assert validate_instance(doc, schema), 'six intake rounds unexpectedly accepted'
+          print('five-round intake boundary passed')
+          PY
 
           cat > /tmp/lanes-parallel.json <<'JSON'
           {"schema_version":"1.0","story_id":"CI-LANES","status":"locked","tasks":[{"id":"TASK-1","stage":"red_test","description":"Write failing test","depends_on":[],"outputs":["tests/test_api.py"],"criteria":["SC-1"]},{"id":"TASK-2","stage":"green_code","description":"Implement backend","depends_on":["TASK-1"],"outputs":["backend/app.py"],"criteria":["SC-1"]},{"id":"TASK-3","stage":"green_code","description":"Implement frontend","depends_on":["TASK-1"],"outputs":["frontend/app.ts"],"criteria":["SC-1"]}],"criterion_test_map":[{"sc_id":"SC-1","test_ids":["TEST-1"]}],"implementation_lanes":[{"id":"LANE-backend","kind":"backend","description":"Backend lane","task_ids":["TASK-2"],"write_surfaces":["backend"],"depends_on_lanes":[]},{"id":"LANE-frontend","kind":"frontend","description":"Frontend lane","task_ids":["TASK-3"],"write_surfaces":["frontend"],"depends_on_lanes":[]}]}
@@ -124,6 +137,14 @@ jobs:
           PY
           python scripts/resolve-lanes.py /tmp/lanes-overlap.json --output /tmp/lanes-overlap-resolution.json
           grep -q '"mode": "sequential"' /tmp/lanes-overlap-resolution.json
+
+      - name: Reject legacy indexed retrieval references
+        run: |
+          if grep -RniE 'OpenSearch|OPENSEARCH_|(^|[^[:alnum:]_])RAG([^[:alnum:]_]|$)|skill-rag-search|rag-search\.sh|RAG_REQUIRED|ai-pipeline-rag|"rag-read"|rag-derived' \
+            --exclude-dir=.git --exclude=CHANGELOG.md --exclude=validate-local-rgr.yml .; then
+            echo 'legacy indexed retrieval reference found' >&2
+            exit 1
+          fi
 
       - name: Exercise schema validator reference and failure paths
         run: |

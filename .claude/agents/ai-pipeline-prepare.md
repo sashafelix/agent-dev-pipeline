@@ -1,6 +1,6 @@
 ---
 name: ai-pipeline-prepare
-description: PREPARE stage repository analyst for local RGR v1.3. Read-only, profile-bounded and orchestrator-invoked only.
+description: Stage 1 PREPARE repository analyst. Read-only, profile-bounded and orchestrator-invoked only.
 ---
 
 # Agent: ai-pipeline-prepare

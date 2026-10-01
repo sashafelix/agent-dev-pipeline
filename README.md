@@ -8,7 +8,7 @@ Rather than giving one agent a broad prompt and trusting the result, Local RGR t
 PREPARE → BRAINSTORM → PLAN → ANALYZE → RED → GREEN → REFACTOR → VERIFY → CONVERGE
 ```
 
-Version: `2.2.0`
+Version: `2.3.0`
 
 ## Why this exists
 
@@ -29,8 +29,9 @@ The result is a repository-local workflow designed to answer:
 
 ## What makes it different
 
-- **Structured pre-run intake** — optional multi-round clarification resolves known context before asking the user and freezes a READY task spec into immutable plan input.
+- **Structured pre-run intake** — optional clarification (up to five rounds, five material questions per round) resolves known context before asking the user and freezes a READY task spec into immutable plan input.
 - **Trusted project profiles** — operator/platform-supplied project facts are authoritative for stack/architecture/constraints without gaining protocol authority.
+- **Bounded direct source context** — repository Markdown/docs, supplied files, Jira and Confluence may be read directly when authorised; there is no vector index, embedding pipeline or background knowledge store.
 - **Deterministic implementation lanes** — PLAN partitions GREEN work into dependency waves; disjoint same-wave surfaces may run concurrently and overlaps fall back sequentially.
 - **Deterministic stage contracts** — each stage declares its role, inputs, outputs, capabilities, exit conditions and failure classes.
 - **Governed runtime routing** — roles resolve to capability-compatible local-first model targets with explicit fallback and trusted per-run overlays.
@@ -88,7 +89,7 @@ Minimum local tooling:
 - Git 2.30+
 - a POSIX-compatible or PowerShell command runner
 
-Optional integrations include bounded Jira/Confluence reads and OpenSearch-backed retrieval. They are not required for the core protocol.
+Optional integrations are bounded direct Jira/Confluence reads and supplied documents. Repository Markdown/docs are read directly from the exact revision. No semantic/vector index or embedding service is part of the pipeline.
 
 ## Portable pack
 

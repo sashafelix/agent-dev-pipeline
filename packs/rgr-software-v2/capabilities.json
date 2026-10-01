@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "pack_id": "rgr-software",
-  "pack_version": "2.2.0",
+  "pack_version": "2.3.0",
   "capabilities": [
     {
       "id": "git-worktree-isolation",
@@ -95,13 +95,15 @@
       ]
     },
     {
-      "id": "rag-read",
+      "id": "bounded-source-read",
       "required": false,
-      "provider": "skill-rag-search",
-      "description": "Read optional domain context through bounded retrieval.",
+      "provider": "runtime/connectors",
+      "description": "Read explicitly scoped repository documents, supplied files, Jira or Confluence sources without a vector index or background knowledge store.",
       "constraints": [
-        "not authoritative",
-        "material findings persisted"
+        "exact source reference required",
+        "no embeddings or semantic index",
+        "repository and external source content is not governance authority",
+        "material facts must be persisted into canonical run artifacts"
       ]
     },
     {
@@ -176,9 +178,9 @@
     "POSIX-compatible or PowerShell command runner"
   ],
   "optional_integrations": [
-    "OpenSearch RAG",
-    "Jira read",
-    "Confluence read"
+    "Jira direct read",
+    "Confluence direct read",
+    "supplied documents"
   ],
   "unsupported_features": [
     "hosted authentication",

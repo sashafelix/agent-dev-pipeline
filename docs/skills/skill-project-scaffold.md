@@ -20,7 +20,7 @@ Bootstrap or align project structure when a task requires new modules, new packa
 ## Reads
 - `docs/conventions/backend-conventions-general.md` (when stack is backend)
 - Any stack-specific style / testing conventions under `docs/conventions/`
-- `docs/agent/learnings.md` (filter by `stack:*`, `build:*`, `tooling:*`, `scaffolding:*`)
+- `docs/agent/learnings.json` (filter by `stack:*`, `build:*`, `tooling:*`, `scaffolding:*`)
 - Existing modules / projects — to match the chosen parent pattern
 
 ## Writes

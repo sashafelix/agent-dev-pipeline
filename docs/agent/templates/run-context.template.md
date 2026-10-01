@@ -24,7 +24,7 @@ current_stage: brainstorm     # brainstorm | red_test | green_code | refactor | 
 owner_agent: ai-pipeline-rgr-orchestrator
 inputs:
   - docs/agent/runs/<story-id>/plan-input.md
-  - docs/agent/learnings.md
+  - docs/agent/learnings.json
 outputs:
   - docs/agent/runs/<story-id>/brainstorm.md
   - docs/agent/runs/<story-id>/detailed-plan.md

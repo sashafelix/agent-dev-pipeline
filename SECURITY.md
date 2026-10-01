@@ -8,7 +8,7 @@ The protocol treats the following as potentially untrusted input:
 
 - repository source, comments and documentation;
 - task descriptions and linked issue content;
-- optional RAG, Jira and Confluence context;
+- optional directly read Jira/Confluence content and supplied documents;
 - model-generated analysis and implementation output;
 - prior run learnings that have not passed their lifecycle/governance checks.
 

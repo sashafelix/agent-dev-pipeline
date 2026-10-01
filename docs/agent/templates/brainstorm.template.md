@@ -4,7 +4,7 @@ story_id: <story-id>
 captured_at: <iso-timestamp>
 owner_agent: ai-pipeline-brainstorm
 status: draft | locked
-input_source: jira | feature-description | user-request | rag-derived | other
+input_source: jira | feature-description | user-request | direct-source | supplied-document | other
 
 ## 1. Intent
 - What is the user / stakeholder actually trying to achieve?

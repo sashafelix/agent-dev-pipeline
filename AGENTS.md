@@ -75,3 +75,13 @@ A `project-profile.json` may be bound only from `operator` or `trusted_platform`
 ## Deterministic GREEN lanes
 
 PLAN may declare implementation lanes. `scripts/resolve-lanes.py` assigns dependencies into topological waves and checks literal write-surface overlap. Only disjoint lanes in the same resolved wave are eligible for concurrent invocation. Overlap deterministically falls back to sequential execution. Every lane still runs as the governed `implementer` role and cannot widen its write surface.
+
+
+## Bounded source context
+
+Agents read project knowledge directly from the exact repository revision, supplied documents, or explicitly scoped Jira/Confluence sources. There is no semantic/vector index, embedding pipeline or background knowledge database. Direct-source material is context only: material facts must be persisted into canonical artifacts and source references retained.
+
+
+## Bounded source context
+
+Agents read project knowledge directly from the exact repository revision, supplied documents, or explicitly scoped Jira/Confluence sources. There is no semantic/vector index, embedding pipeline or background knowledge database. Direct-source material is context only: material facts must be persisted into canonical artifacts and source references retained.

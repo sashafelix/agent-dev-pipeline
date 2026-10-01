@@ -10,7 +10,7 @@ Apply CI/CD, pipeline, and runtime/deployment configuration changes that fall wi
 ## Reads
 - `docs/conventions/backend-conventions-general.md`
 - `docs/conventions/backend-conventions-quality-ops.md`
-- `docs/agent/learnings.md` (filter by `infra:*`, `deploy:*`, `ci:*`, `secrets:*`)
+- `docs/agent/learnings.json` (filter by `infra:*`, `deploy:*`, `ci:*`, `secrets:*`)
 - Existing pipeline / Helm / Dockerfile / profile config
 - Runtime requirements in `brainstorm.md` or `detailed-plan.md`
 
@@ -33,7 +33,7 @@ Apply CI/CD, pipeline, and runtime/deployment configuration changes that fall wi
 ### 3. Image + dependency pinning
 - Docker images pinned to a specific tag or digest. No `:latest`.
 - Base image aligned with the team standard (documented or inherited from parent image).
-- If a new dependency is added, it must resolve against the approved mirror (Nexus) — check `learnings.md` for credential workarounds.
+- If a new dependency is added, it must resolve against the approved mirror (Nexus) — check `learnings.json` for credential workarounds.
 
 ### 4. Resource + runtime limits
 - Memory/CPU requests and limits set explicitly (Kubernetes).

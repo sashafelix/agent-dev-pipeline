@@ -20,7 +20,8 @@ The pipeline is **stack-agnostic**. Skills fall into two groups:
 - `skill-devops.md` — CI/CD + runtime config changes
 - `skill-compliance.md` — traceable evidence for release controls
 - `skill-decision-index.md` — compact update of `decision-index.md`
-- `skill-rag-search.md` — query RAG (with fallback semantics)
+
+Direct context lookup uses exact repository Markdown/docs, supplied files, or explicitly scoped Jira/Confluence reads. No semantic/vector index or embedding store is part of the pipeline.
 
 ## Stack-specific skills (invoke only when the stack matches)
 - `skill-database.md` — SQL migrations + safety matrix *(stacks with a relational persistence layer; Flyway examples, generalizes to Liquibase/Drizzle/Prisma/Alembic)*
@@ -38,6 +39,6 @@ The pipeline is **stack-agnostic**. Skills fall into two groups:
 - Follow `CLAUDE.md`. Apply `docs/conventions/backend-conventions-general.md` only when the stack is backend.
 - Write only within the scope requested by the calling agent.
 - Record non-trivial decisions to `docs/agent/runs/{story_id}/decision-log.md` with rationale and related learning IDs.
-- Read `docs/agent/learnings.md` at start, **filtered by `scope_tags`** matching the task (especially `stack:*`); append reusable candidate learnings with evidence.
+- Read `docs/agent/learnings.json` at start, **filtered by `scope_tags`** matching the task (especially `stack:*`); append reusable candidate learnings with evidence.
 - Use `{project_root}` from run-context for all file paths.
 - No skill may unilaterally change stage; return control to the calling agent.

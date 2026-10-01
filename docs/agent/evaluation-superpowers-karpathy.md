@@ -27,7 +27,7 @@ Extensions added beyond the original review:
 - **Brainstorm stage**: declarative SCs now gate planning and RED.
 - **Worktree isolation**: every run lives in `.agent-runs/{story_id}` on `story/{story_id}`.
 - **Learnings register with `scope_tags` + lifecycle**: candidate → active → deprecated/conflicted.
-- **Stack-agnostic framing**: pipeline accepts Jira stories, feature descriptions, free-form requests, or RAG-derived tasks; target may be backend/frontend/mobile/infra/polyglot.
+- **Stack-agnostic framing**: pipeline accepts Jira stories, feature descriptions, free-form requests, or direct-source/supplied-document tasks; target may be backend/frontend/mobile/infra/polyglot.
 
 ---
 
@@ -44,7 +44,7 @@ Extensions added beyond the original review:
 | **Check your work** — self-review before declaring done | Quality gate exists but stage agents don't self-check | Missing self-verification in RED/GREEN/REFACTOR | 🟡 MED |
 | **Be explicit about uncertainty** — flag assumptions clearly | Decision-log exists for this | Partially covered; could be stronger | 🟡 MED |
 | **Minimal changes** — smallest possible diff | GREEN agent says "minimum" but no explicit diff-size guardrail | Could add explicit single-responsibility-per-commit rule | 🟢 LOW |
-| **Don't guess — search** — use tools to find facts, don't assume | RAG search available but not mandatory | Should mandate codebase search before writing new code | 🔴 HIGH |
+| **Don't guess — search** — use tools to find facts, don't assume | bounded repository/source reads available but not mandatory | Should mandate codebase search before writing new code | 🔴 HIGH |
 | **One thing at a time** — don't mix concerns in a single change | Covered by story-first + scope boundaries | ✅ Strong | ✅ OK |
 | **Preserve existing patterns** — match the style of surrounding code | Conventions exist but no explicit "match neighbors" rule | Add pattern-matching mandate to GREEN/REFACTOR | 🟡 MED |
 

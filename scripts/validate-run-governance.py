@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate one run against local RGR v1.3 profile and role governance."""
+"""Validate one run against the v1.3 governance subcontracts used by the current Local RGR pack."""
 from __future__ import annotations
 
 import argparse
@@ -168,7 +168,7 @@ def main() -> int:
         for error in errors:
             print(f"ERROR: {error}", file=sys.stderr)
         return 1
-    print(f"PASS: {args.run_dir} satisfies local RGR v1.3 governance")
+    print(f"PASS: {args.run_dir} satisfies the v1.3 governance subcontracts")
     return 0
 
 

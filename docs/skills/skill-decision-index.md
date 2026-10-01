@@ -23,7 +23,7 @@ One row per story run. Columns:
 | --- | --- | --- | --- | --- | --- |
 | `<story-id>` | `<YYYY-MM-DD>` | PASS \| FAIL \| WARN | one-line what-shipped / why-failed | `tag`, `tag` | [log](runs/`<story-id>`/decision-log.md) |
 
-`story_id` is whatever identifier the input gave you: a Jira key (e.g., `ACME-123`), a feature slug (`user-profile-avatar-upload`), a request slug (`rag-2026-04-cleanup`), or a RAG-derived task id. Use what `run-context.md > story_id` says; never invent.
+`story_id` is whatever identifier the input gave you: a Jira key (e.g., `ACME-123`), a feature slug (`user-profile-avatar-upload`), a request slug (`source-2026-04-cleanup`), or a direct-source task id. Use what `run-context.md > story_id` says; never invent.
 
 ## Summary construction
 
@@ -38,7 +38,7 @@ Pull the summary from:
 
 ## Tags
 
-Use tags that match the `scope_tags` vocabulary in `learnings.md`:
+Use tags that match the `scope_tags` vocabulary in `docs/agent/learnings.json`:
 - Stack: `backend-java`, `frontend-react`, `mobile-flutter`, `infra-terraform`, …
 - Area: `api`, `db`, `auth`, `integration`, `scheduling`, `observability`, `security`, `ui`, `state`, `routing`, `forms`
 - Risk: `audit`, `pii`, `migration`, `breaking-contract` *(if applicable)*
@@ -68,7 +68,7 @@ If the run also produced a `quality-gates.md` with a verdict worth re-reading, a
 | --- | --- | --- | --- | --- | --- |
 | ACME-1421 | 2026-05-02 | PASS | Inventory adjustment endpoint with audit log | `backend-java`, `api`, `audit`, `postgres` | [log](runs/ACME-1421/decision-log.md) |
 | user-profile-avatar-upload | 2026-05-03 | PASS | Drag-and-drop avatar upload with client-side crop preview | `frontend-react`, `ui`, `forms` | [log](runs/user-profile-avatar-upload/decision-log.md) |
-| rag-2026-04-cleanup | 2026-05-04 | FAIL | Halted at dependency resolve (registry auth 401) | `infra`, `nexus` | [log](runs/rag-2026-04-cleanup/decision-log.md) |
+| source-2026-04-cleanup | 2026-05-04 | FAIL | Halted at dependency resolve (registry auth 401) | `infra`, `nexus` | [log](runs/source-2026-04-cleanup/decision-log.md) |
 ```
 
 ## Guardrails

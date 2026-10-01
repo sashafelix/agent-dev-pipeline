@@ -10,7 +10,7 @@ Improve Java code structure, readability, and maintainability during the REFACTO
 ## Reads
 - `docs/conventions/backend-conventions-general.md`
 - `docs/conventions/backend-conventions-java-style.md`
-- `docs/agent/learnings.md` (filter by `tooling:java`, `style:*`)
+- `docs/agent/learnings.json` (filter by `tooling:java`, `style:*`)
 - Files in refactor scope + their direct callers
 
 ## Writes
