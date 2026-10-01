@@ -10,7 +10,7 @@ PREPARE → BRAINSTORM → PLAN → ANALYZE → RED → GREEN → REFACTOR → V
 
 Version: `2.3.0`
 
-Optional [project setup and review tools](docs/agent/operator-tools.md) provide five-question project notes, locked-plan checks and spec/code/docs reconciliation. The [desktop companion](https://github.com/sashafelix/agent-pipeline-ui) can prepare project configuration; execution and governance remain in this pipeline.
+Optional [project setup and review tools](docs/agent/operator-tools.md) provide five-question project notes, locked-plan checks and spec/code/docs reconciliation. The [desktop companion](https://github.com/sashafelix/agent-pipeline-ui) can prepare project and [model configuration](docs/agent/runtime-configuration.md); execution and governance remain in this pipeline.
 
 ## Why this exists
 
