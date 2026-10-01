@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-dev-pipeline.local/schemas/runtime-configuration.schema.json",
+  "title": "Operator runtime configuration (no credentials or execution authority)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "profile",
+    "providers"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "kind": {
+      "type": "string",
+      "const": "rgr-runtime-configuration"
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "projectId",
+        "localOnly",
+        "models",
+        "routes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "projectId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "localOnly": {
+          "type": "boolean"
+        },
+        "models": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "name",
+              "providerId",
+              "model",
+              "maxOutputTokens",
+              "contextWindow",
+              "temperature",
+              "reasoningEffort"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^[a-z0-9][a-z0-9-]*$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "providerId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^[a-z0-9][a-z0-9-]*$"
+              },
+              "model": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "maxOutputTokens": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 262144
+              },
+              "contextWindow": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              "temperature": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 2
+              },
+              "reasoningEffort": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1,
+                "maxLength": 32
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 100
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "role",
+              "models"
+            ],
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": [
+                  "orchestrator",
+                  "repository_analyst",
+                  "specifier",
+                  "consistency_analyst",
+                  "test_author",
+                  "implementer",
+                  "refactorer",
+                  "independent_verifier",
+                  "convergence_reviewer",
+                  "risk_reviewer",
+                  "threat_modeler",
+                  "migration_reviewer",
+                  "infrastructure_reviewer",
+                  "contract_reviewer",
+                  "accessibility_reviewer"
+                ]
+              },
+              "models": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80,
+                  "pattern": "^[a-z0-9][a-z0-9-]*$"
+                },
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true
+              }
+            }
+          },
+          "minItems": 15,
+          "maxItems": 15
+        }
+      }
+    },
+    "providers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "protocol",
+          "baseUrl",
+          "locality",
+          "auth",
+          "allowInsecureHttp",
+          "timeoutMs",
+          "discoveryRetries"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "openai-responses",
+              "openai-chat",
+              "anthropic-messages",
+              "gemini"
+            ]
+          },
+          "baseUrl": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "locality": {
+            "type": "string",
+            "enum": [
+              "local",
+              "external"
+            ]
+          },
+          "auth": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "mode",
+              "header",
+              "credentialRef"
+            ],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "bearer",
+                  "header"
+                ]
+              },
+              "header": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "credentialRef": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1,
+                "maxLength": 132
+              }
+            }
+          },
+          "allowInsecureHttp": {
+            "type": "boolean"
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 120000
+          },
+          "discoveryRetries": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2
+          }
+        }
+      },
+      "minItems": 1,
+      "maxItems": 100
+    }
+  }
+}

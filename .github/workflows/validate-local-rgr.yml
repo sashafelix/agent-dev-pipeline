@@ -27,6 +27,8 @@ jobs:
             scripts/validate-run-governance.py \
             scripts/validate-pack.py \
             scripts/resolve-runtime.py \
+            scripts/runtime_configuration.py \
+            scripts/validate-runtime-configuration.py \
             scripts/validate-project-profile.py \
             scripts/render-plan-input.py \
             scripts/resolve-lanes.py \
@@ -46,6 +48,8 @@ jobs:
               assert schema.get('$id'), f'{path}: missing $id'
               print(f'parsed {path}')
           PY
+      - name: Validate desktop model configuration fixture
+        run: python scripts/validate-runtime-configuration.py tests/fixtures/runtime-configuration.json
       - name: Test optional operator tools
         run: python -m unittest discover -s tests -v
       - name: Validate governance contracts and evaluation corpus

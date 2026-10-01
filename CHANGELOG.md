@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added a secret-free provider/model configuration schema, strict cross-reference and local-only validation, and the desktop companion export fixture.
+- Added read-only role-routing preflight against independently trusted, binding-hash-pinned adapter registrations; configuration and probe results grant no execution authority.
+
 - Added optional CLI helpers for five-question project knowledge onboarding, structural plan review and spec/code/docs reconciliation against an explicit Git base.
 - Added create-only reports, bounded path-safe inspection, evidence fingerprints and regression tests for drift and malformed input.
 - Strengthened intake, ANALYZE and VERIFY guidance without changing the nine-stage protocol, profile schema or intake budget.
