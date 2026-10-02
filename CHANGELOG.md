@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Replaced inherited project acronyms, domain fields and sample models and log prefixes with fictional inventory examples; documented neutral example-data conventions.
+
 - Reconciled README/runtime readiness claims, BRAINSTORM canonical JSON instructions, nine-stage templates, lane examples, closure indexing and optional UI configuration handoffs with current contracts.
 - Corrected reference-helper authority, export/redaction limitations and stale backend security, tracing, coverage and integration examples.
 

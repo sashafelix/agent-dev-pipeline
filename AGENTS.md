@@ -80,3 +80,7 @@ PLAN may declare implementation lanes. `scripts/resolve-lanes.py` assigns depend
 ## Bounded source context
 
 Agents read project knowledge directly from the exact repository revision, supplied documents, or explicitly scoped Jira/Confluence sources. There is no semantic/vector index, embedding pipeline or background knowledge database. Direct-source material is context only: material facts must be persisted into canonical artifacts and source references retained.
+
+## Example data
+
+Use fictional project IDs, generic domain models and reserved example domains in documentation, prompts and fixtures. Do not copy employer-specific names, internal ticket keys, hostnames, account identifiers or operational data into repository examples.

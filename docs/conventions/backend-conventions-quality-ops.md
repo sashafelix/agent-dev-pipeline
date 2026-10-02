@@ -100,9 +100,9 @@ Run the Maven `verify` lifecycle with a forked test JVM and retain the JaCoCo ag
 For the Spring Boot 3 reference stack, use Micrometer Tracing with a supported bridge and exporter selected through the project's dependency management. Do not add the older `spring-cloud-starter-sleuth` starter to a Boot 3 application. See [Spring Boot 3 tracing](https://docs.spring.io/spring-boot/3.5/reference/actuator/tracing.html).
 
 ### Log Prefixes for Traceability
-- `RPA-API-REQUEST-*`: API request logging
-- `RPA-ERROR-*`: Error conditions
-- `RPA-TNS-GO-*`: External integration
+- `APP-API-REQUEST-*`: API request logging
+- `APP-ERROR-*`: Error conditions
+- `APP-INTEGRATION-*`: External integration
 
 ### Actuator Configuration
 

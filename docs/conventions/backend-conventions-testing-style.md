@@ -27,21 +27,21 @@ Applies to: relevant stage agents through the matching `docs/skills/` helpers. H
 
 ### Controller Tests (`@WebMvcTest`)
 ```java
-@WebMvcTest(controllers = OutletController.class)
+@WebMvcTest(controllers = WarehouseController.class)
 @Import(MethodSecurityConfig.class)
-class OutletControllerTest {
+class WarehouseControllerTest {
     @Autowired
     private MockMvc mvc;
     
     @MockBean
-    private OutletService outletService;
+    private WarehouseService warehouseService;
     
     @BeforeEach
     void setUp() {
         this.mvc = MockMvcBuilders
             .webAppContextSetup(webApplicationContext)
             .apply(springSecurity())
-            .defaultRequest(put("/hst/outlet").with(csrf()))
+            .defaultRequest(put("/api/inventory/warehouse").with(csrf()))
             .build();
     }
 }
@@ -50,16 +50,16 @@ class OutletControllerTest {
 ### Service Tests (Focused)
 ```java
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = OutletService.class)
-class OutletServiceTest {
+@SpringBootTest(classes = WarehouseService.class)
+class WarehouseServiceTest {
     @Autowired
-    OutletService outletService;
+    WarehouseService warehouseService;
     
     @MockBean
-    private OutletRepository outletRepository;
+    private WarehouseRepository warehouseRepository;
     
     @MockBean
-    private OutletMapper outletMapper;
+    private WarehouseMapper warehouseMapper;
 }
 ```
 
@@ -72,17 +72,17 @@ class OutletServiceTest {
 @Test
 @WithMockUser(username = "boo", authorities = "User")
 void import_withUserRole_shouldAbleToImport() throws Exception {
-    when(importService.importHSTData()).thenReturn(true);
-    mvc.perform(get("/hst/import"))
+    when(importService.importInventoryData()).thenReturn(true);
+    mvc.perform(get("/api/inventory/import"))
         .andExpect(status().isOk())
         .andExpect(content().string("done"));
-    verify(importService, times(1)).importHSTData();
+    verify(importService, times(1)).importInventoryData();
 }
 
 @Test
 @WithAnonymousUser
 void index_withAnonymousUser_shouldReturnUnauthorizedError() throws Exception {
-    mvc.perform(get("/hst"))
+    mvc.perform(get("/api/inventory"))
         .andExpect(status().isUnauthorized());
 }
 ```
@@ -91,7 +91,7 @@ void index_withAnonymousUser_shouldReturnUnauthorizedError() throws Exception {
 
 ### Request Building
 ```java
-mvc.perform(get("/hst/outlet/{id}/{buno}", 1, "boo"))
+mvc.perform(get("/api/inventory/warehouse/{id}/{warehouseNumber}", 1, "boo"))
     .andExpect(status().isOk())
     .andExpect(jsonPath("$.id", is(1)))
     .andReturn();
@@ -113,13 +113,13 @@ mvc.perform(post("/api/cases")
 Use `MockedStatic<>` for static methods:
 ```java
 @Test
-void it_should_getAll_outlets() {
+void it_should_getAll_warehouses() {
     try (MockedStatic<UserContextHolder> mockedStatic = mockStatic(UserContextHolder.class)) {
         mockedStatic.when(() -> UserContextHolder.hasUserRole("User")).thenReturn(true);
 
         // test logic
 
-        var result = outletService.overview();
+        var result = warehouseService.overview();
         assertThat(result.getData()).hasSize(1);
     }
 }
@@ -128,12 +128,12 @@ void it_should_getAll_outlets() {
 ## Test Data Factory Methods
 Create reusable test data builders:
 ```java
-private static OutletOverview mockOutletOverview() {
-    OutletOverview outlet = new OutletOverview();
-    outlet.setId(1L);
-    outlet.setName("Test Outlet");
-    outlet.setOutletStatus(true);
-    return outlet;
+private static WarehouseOverview mockWarehouseOverview() {
+    WarehouseOverview warehouse = new WarehouseOverview();
+    warehouse.setId(1L);
+    warehouse.setName("Test Warehouse");
+    warehouse.setWarehouseStatus(true);
+    return warehouse;
 }
 ```
 

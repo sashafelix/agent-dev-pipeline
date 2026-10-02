@@ -32,7 +32,7 @@ public class MyService { ... }
 
 ```java
 @PreAuthorize("hasAuthority('User')")
-@PutMapping("/outlet")
+@PutMapping("/warehouse")
 public void updateMetadata(@Valid @RequestBody UpdateMetadataRequest request) {
     log.debug("Updating metadata"); // correlation ID comes from logging context
     request.getMetadataList().forEach(metadataService::updateMeta);
@@ -97,16 +97,16 @@ try (CustomZipInputStream zis = new CustomZipInputStream(inputStream)) {
 
 ### Parameterized Logging
 ```java
-log.info("Processing outlet: {} with status: {}", outletId, status);
+log.info("Processing warehouse: {} with status: {}", warehouseId, status);
 log.debug("Request accepted"); // do not log the request body
-log.error("RPA-ERROR-IMPORT: {}", e.getLocalizedMessage(), e);
+log.error("APP-ERROR-IMPORT: {}", e.getLocalizedMessage(), e);
 ```
 
 ### Structured Log Prefixes
 Use consistent prefixes for traceability:
-- `RPA-API-REQUEST-*`: API request logging
-- `RPA-ERROR-*`: Error conditions  
-- `RPA-TNS-GO-*`: External integration logging
+- `APP-API-REQUEST-*`: API request logging
+- `APP-ERROR-*`: Error conditions
+- `APP-INTEGRATION-*`: External integration logging
 
 ### Rules
 - Never log secrets/tokens.

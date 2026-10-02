@@ -44,27 +44,27 @@ public abstract class AbstractBaseEntity implements Serializable {
 ```java
 @Entity
 @Data
-@Table(name = "outlet")
+@Table(name = "warehouse")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
-public class Outlet extends AbstractBaseEntity implements Serializable {
+public class Warehouse extends AbstractBaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "outlet_generator")
-    @SequenceGenerator(name = "outlet_generator", sequenceName = "outlet_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "warehouse_generator")
+    @SequenceGenerator(name = "warehouse_generator", sequenceName = "warehouse_seq", allocationSize = 1)
     private Long id;
 
     @Column(nullable = false)
     @EqualsAndHashCode.Include
-    private String outletNumber;  // Business key
+    private String warehouseNumber;  // Business key
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "legal_entity_fk", referencedColumnName = "id")
+    @JoinColumn(name = "organization_fk", referencedColumnName = "id")
     @ToString.Exclude
-    private LegalEntity legalEntity;
+    private Organization organization;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "outlet", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "warehouse", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<Address> addresses = new ArrayList<>();
 }
@@ -101,10 +101,10 @@ For database views, use immutable entities:
 @Getter
 @Setter
 @Immutable
-@Table(name = "outlet_overview")
-public class OutletOverview {
+@Table(name = "warehouse_overview")
+public class WarehouseOverview {
     @Id
-    String buno;
+    String warehouseNumber;
     
     // Manual equals/hashCode on business key
     @Override
@@ -127,9 +127,9 @@ public class OutletOverview {
 
 ```java
 @Repository
-public interface OutletRepository extends JpaRepository<Outlet, Long> {
-    Outlet findByOutletNumberAndLegalEntityDpNumber(String outletNumber, String dpNumber);
-    Optional<OutletOverview> findByIdAndBunoAndOutletStatusTrueAndOutletHiddenFalse(Long id, String buno);
+public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
+    Warehouse findByWarehouseNumberAndOrganizationCode(String warehouseNumber, String organizationCode);
+    Optional<WarehouseOverview> findByIdAndWarehouseNumberAndWarehouseStatusTrueAndWarehouseHiddenFalse(Long id, String warehouseNumber);
 }
 ```
 
@@ -154,7 +154,7 @@ public abstract class AbstractAuditingDTO implements Serializable {
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id", callSuper = false)
-public class OutletDto extends AbstractAuditingDTO implements Serializable {
+public class WarehouseDto extends AbstractAuditingDTO implements Serializable {
     private Long id;
     private String name;
     
@@ -182,12 +182,12 @@ public interface EntityMapper<D, E> {
 ## MapStruct Mapper Conventions
 ```java
 @Mapper(componentModel = "spring")
-public interface OutletMapper extends EntityMapper<OutletDto, Outlet> {
+public interface WarehouseMapper extends EntityMapper<WarehouseDto, Warehouse> {
 
-    @Mapping(target = "agDealer", expression = "java(outlet.getLegalEntity() != null ? outlet.getLegalEntity().getDpNumber() : null)")
-    @Mapping(target = "name", expression = "java(outlet.getFullName())")
-    @Mapping(target = "outletType", source = "outletTypeArchitectural")
-    OutletDto toDto(Outlet outlet);
+    @Mapping(target = "organizationCode", expression = "java(warehouse.getOrganization() != null ? warehouse.getOrganization().getCode() : null)")
+    @Mapping(target = "name", expression = "java(warehouse.getFullName())")
+    @Mapping(target = "warehouseType", source = "warehouseTypeArchitectural")
+    WarehouseDto toDto(Warehouse warehouse);
 }
 ```
 
@@ -197,17 +197,17 @@ public interface OutletMapper extends EntityMapper<OutletDto, Outlet> {
     AddressMapper.class,
     CommunicationMapper.class
 })
-public interface OutletDetailMapper { ... }
+public interface WarehouseDetailMapper { ... }
 ```
 
 ### Mapper Decorators
 ```java
 @Mapper(componentModel = "spring", uses = {...})
-@DecoratedWith(OutletDecorator.class)
-public interface XmlOutletMapper {
+@DecoratedWith(WarehouseDecorator.class)
+public interface XmlWarehouseMapper {
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "legalEntity", ignore = true)
-    Outlet xmlToEntity(DataRecord record);
+    @Mapping(target = "organization", ignore = true)
+    Warehouse xmlToEntity(DataRecord record);
 }
 ```
 
