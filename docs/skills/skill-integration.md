@@ -1,7 +1,7 @@
 # Skill: skill-integration
 
 ## Purpose
-Implement resilient adapters for external systems (IVS-R, Kafka, S3, REST APIs, SFTP). Keep the adapter layer thin, the domain layer ignorant of transport, and behavior predictable under failure.
+Implement resilient adapters for external systems (message brokers, object storage, REST APIs, SFTP). Keep the adapter layer thin, the domain layer ignorant of transport, and behavior predictable under failure.
 
 ## When invoked
 - By `ai-pipeline-green-code` when a story touches an external system.

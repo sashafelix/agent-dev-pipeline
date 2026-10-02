@@ -117,7 +117,7 @@ After closure, optionally export:
 python3 scripts/export-run-bundle.py docs/agent/runs/{story_id} evidence.tar.gz
 python3 scripts/verify-export-bundle.py evidence.tar.gz
 
-Exports contain run evidence only—never story source, binaries, detected secrets, credentials or publication authority.
+Exports contain allowed run evidence, exclude separate story source/binary files and reject detected secret patterns. Review evidence text for embedded excerpts and undetected sensitive content before sharing. Export grants no publication authority.
 
 ## Rigor Route boundary
 

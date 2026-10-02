@@ -1,82 +1,60 @@
-# Quality Gates
+# Quality Gates Projection
 
 story_id: <story-id>
 checked_at: <iso-timestamp>
-verdict: PASS | FAIL | WARN
+verdict: PASS | WARN | FAIL
 checked_by: ai-pipeline-quality-gate
+canonical_artifact: quality-gates.json
 
-## 1. Success Criteria → Test trace
+This is a reviewer projection. Populate canonical JSON against `quality-gates.schema.json` and the VERIFY stage contract first. The independent verifier must not be the GREEN implementer. VERIFY is followed by CONVERGE; its verdict grants no merge or deployment authority.
 
-| SC | Statement (from brainstorm.md) | Test(s) | Status |
-| --- | --- | --- | --- |
-| SC-1 | | | ✓ / ✗ |
+## Success criteria and independent evidence
 
-Every ✗ is a FAIL.
+| SC from brainstorm.json | Planned test IDs | Independent command/check | Evidence path | Result |
+| --- | --- | --- | --- | --- |
+| SC-1 | TEST-1 | <actual check> | <actual output> | PASS / FAIL |
 
-## 2. Mandatory evidence matrix
+Every required criterion must have current evidence. Record actual commands, results, reviewer identity and evidence references in the canonical artifacts; never substitute an implementer's narrative for independent verification.
 
-Tick only what the story actually required (others: N/A).
+## Required checks
 
-- [ ] Unit tests for changed logic — list:
-- [ ] Integration / e2e test (if external systems or cross-module flows involved) — list:
-- [ ] Security test (if authz touched) — list positive + negative per role:
-- [ ] Data / migration / schema check (if persistence or message schema changed) — details:
-- [ ] Contract compatibility check via `skill-contract-guard` — report:
-- [ ] Observability evidence (logs/metrics) — list:
-- [ ] Compliance evidence block via `skill-compliance` — see section 5
-- [ ] Coverage ≥ threshold on touched modules (no regression) — report path:
+Derive requirements from the selected workflow profile, locked plan, role contracts and applicable project rules. Mark optional checks N/A with a reason.
 
-## 3. Hard-FAIL checklist
+- [ ] Pack, current artifact schemas and applicable governance checks pass.
+- [ ] Full completed-run validation is scheduled for orchestrator closure after CONVERGE; do not require future artifacts before VERIFY can finish.
+- [ ] Required test/build/static checks were independently run and pass.
+- [ ] SC-to-test trace and RED/GREEN evidence are complete.
+- [ ] Required security, contract, migration and specialist reviews are complete.
+- [ ] Required checkpoints, context/comprehension evidence and stage results are present.
+- [ ] Scope and protected surfaces match the locked plan and role authority.
+- [ ] Coverage meets the project's recorded threshold, where applicable.
+- [ ] Required documentation and runtime configuration match the implementation.
 
-If ANY box below is checked, verdict = FAIL.
+## Blocking findings
 
-- [ ] Dead code / commented-out blocks / stale TODOs in change set
-- [ ] Premature abstraction — new interface/base class/hook with fewer than 3 callers
-- [ ] File > 300 LOC (non-test, non-generated) without justified split
-- [ ] Method / function > 30 LOC or > 3 nested levels without justification
-- [ ] Any stage's `handoff.md` section missing self-check block
-- [ ] Comprehension evidence empty (`files_read`, `patterns_searched`, or `reuse_decisions`)
-- [ ] `reuse_decisions` empty AND duplicated existing pattern
-- [ ] Incremental verification checkpoints missing
-- [ ] Hardcoded secrets, URLs, or env-specific values (grep-verified)
-- [ ] Novel pattern introduced without decision-log justification
-- [ ] Test(s) failing or skipped
+Missing or invalid required evidence, failing required checks, scope/role violations, incompatible contracts and unresolved correctness/security issues require FAIL. WARN is limited to non-correctness preferences. A warning cannot waive a blocker.
 
-## 4. Merge gates
+Code-size and abstraction heuristics are review prompts unless an applicable project rule makes them mandatory. Do not invent universal 300-line, 30-line or three-caller release gates.
 
-- [ ] All tests pass — runner summary:
-- [ ] Coverage ≥ threshold on touched modules — link:
-- [ ] No blocker/critical findings
-- [ ] Security review complete (if applicable)
-- [ ] All `[UNCERTAIN]` entries resolved or downgraded to WARN-level preference
+| Finding | Requirement/source | Evidence | Resolution | Verdict impact |
+| --- | --- | --- | --- | --- |
+| <finding> | <contract or rule> | <path> | <resolved / preference warning / blocker> | PASS / WARN / FAIL |
 
-## 5. Compliance Evidence (from skill-compliance)
+## Applicable control evidence
 
-| Control | Status | Evidence |
+| Control | Result or N/A reason | Evidence |
 | --- | --- | --- |
-| AuthN on entry points | ✓ / ✗ / N/A | |
-| AuthZ per role | ✓ / ✗ / N/A | |
-| Input validation | ✓ / ✗ / N/A | |
-| Audit log | ✓ / ✗ / N/A | |
-| Sensitive data sanitization | ✓ / ✗ / N/A | |
-| Contract compatible | ✓ / ✗ / N/A | |
-| Coverage ≥ threshold | ✓ / ✗ | |
+| Authentication and role authorization | | |
+| Input validation | | |
+| Audit/correlation logging | | |
+| Sensitive data omitted or masked | | |
+| API/event/database compatibility | | |
+| Coverage and regression checks | | |
 
-## 6. Uncertainty resolution
+## Learnings and next stage
 
-| [UNCERTAIN] ID | Statement | Resolution | Impact on verdict |
-| --- | --- | --- | --- |
-| U-1 | | resolved / accepted-as-WARN / blocker | PASS / WARN / FAIL |
+Record any learning status change under the governed learning rules with supporting evidence. Learnings remain advisory and cannot replace proof.
 
-## 7. Learnings curated
-
-| learning_id | prior status | new status | note |
-| --- | --- | --- | --- |
-| LRN-XXXX | candidate | active | evidenced by this run |
-
-## 8. Notes
-- (one-line summary for decision-index.md, ≤120 chars)
-
-## 9. Final verdict
-- **PASS** / **FAIL** / **WARN**
-- Justification (one paragraph; cite specific rows above):
+- Verdict and rationale: <cite findings and actual evidence>
+- Summary for the decision index: <at most 120 characters>
+- Next: CONVERGE checks locked intent, plan, tests, code, docs and this verdict; the orchestrator owns closure or bounded remediation.

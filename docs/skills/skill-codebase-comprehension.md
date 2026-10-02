@@ -8,17 +8,17 @@ Systematically read and understand existing code before making changes. Ensures 
 - Optionally by RED stage when test targets touch complex existing code.
 
 ## Reads
-- `docs/agent/runs/{story_id}/detailed-plan.md` (to identify change scope)
-- `docs/conventions/backend-conventions-general.md`
-- All files in the change scope and their direct dependencies
+- The caller’s immutable context manifest and, once available, `docs/agent/runs/{story_id}/detailed-plan.json` (to identify locked change scope)
+- Applicable stack conventions; `docs/conventions/backend-conventions-general.md` only for backend work
+- Files in the change scope and direct dependencies permitted by the context manifest
 
 ## Writes
 - Comprehension summary appended to `docs/agent/runs/{story_id}/decision-log.md`
 
 ## Steps
-1. Identify all files in the change scope from `detailed-plan.md`.
+1. Identify permitted scope from the context manifest and locked `detailed-plan.json`. If called before PLAN, use the permitted PREPARE/intent context; do not invent a plan.
 2. Read each file and its direct dependencies (imports, called services, injected beans).
-3. Trace the call chain: controller → service → repository → entity for the feature area.
+3. Trace the relevant call/data flow (for example, controller → service → repository in a backend, or component → state → API in a frontend).
 4. Search the codebase for similar patterns (naming, structure, error handling, test style).
 5. Identify: existing utilities to reuse, patterns to match, anti-patterns to avoid.
 6. Document findings as a brief comprehension summary in the decision-log.

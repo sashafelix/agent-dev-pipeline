@@ -16,7 +16,7 @@ Add or validate logs/metrics/traces for key backend business flows.
 
 ### Correlation ID
 - Every request must have a correlation ID (trace ID).
-- Use Spring Cloud Sleuth or Micrometer Tracing for automatic propagation.
+- For the Spring Boot 3 reference stack, use Micrometer Tracing with a supported bridge. Sleuth belongs to older Boot integrations; follow the target project’s dependency management. See [Spring Boot tracing](https://docs.spring.io/spring-boot/3.5/reference/actuator/tracing.html).
 - Include correlation ID in all log entries and error responses.
 - Header: `X-Correlation-ID` or `X-Request-ID`.
 
@@ -46,10 +46,7 @@ Required log fields for business events:
 | TRACE | Very verbose, usually disabled in prod |
 
 ### Sensitive Data Redaction
-Use `LogSanitizer` for all user-supplied input:
-```java
-log.info("Request: {}", LogSanitizer.getSanitizedStringForLogging(input));
-```
+Choose allowed non-sensitive log fields first. Omit or explicitly mask sensitive fields and test the rendered log output. The `LogSanitizer` example only replaces control characters to limit log injection; it is not a PII/secret redactor. Do not log raw request objects.
 
 Never log:
 - Passwords, tokens, secrets
@@ -59,7 +56,7 @@ Never log:
 
 ### Metrics
 - Use Micrometer for custom metrics.
-- Name pattern: `ai_pipeline.{domain}.{action}` (e.g. `ai_pipeline.order.created`).
+- Use the target project’s metric namespace (for example, `orders.order.created`); `ai_pipeline` is not a required namespace for applications using this pipeline.
 - Tag with relevant dimensions (status, type, etc.).
 
 ### Error Events

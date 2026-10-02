@@ -56,3 +56,5 @@ python3 scripts/validate-project-profile.py /path/to/project-profile.json
 The UI and pipeline remain separate repositories. The UI export carries no stage, runtime, risk, capability, checkpoint or publication authority. Provenance text alone does not establish trust: bind the file only when independently supplied by an operator/trusted platform. Repository-discovered profiles remain untrusted. Commands are project facts, not permission to execute them.
 
 Execution continues through the existing pipeline orchestrator and runtime. A future desktop execution adapter requires a separately reviewed, opt-in integration and end-to-end conformance tests for all nine stages, risk escalation, independent verification, checkpoints, evidence integrity, failure/remediation and interrupted-run recovery.
+
+The companion also prepares reviewed provider/model profiles and role-routing exports. Follow [runtime configuration](runtime-configuration.md) to validate and explicitly preflight those files. Preflight is separate from the project-facts handoff, does not read credentials or contact providers, returns `execution_authority: false`, and does not modify live routing.

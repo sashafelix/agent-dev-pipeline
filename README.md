@@ -8,7 +8,7 @@ Rather than giving one agent a broad prompt and trusting the result, Local RGR t
 PREPARE → BRAINSTORM → PLAN → ANALYZE → RED → GREEN → REFACTOR → VERIFY → CONVERGE
 ```
 
-Version: `2.3.0`
+Version marker: `2.3.0`. Changes under `Unreleased` in [CHANGELOG.md](CHANGELOG.md), including the optional operator tools and model-configuration handoff, are present on the current branch but are not a new tagged release.
 
 Optional [project setup and review tools](docs/agent/operator-tools.md) provide five-question project notes, locked-plan checks and spec/code/docs reconciliation. The [desktop companion](https://github.com/sashafelix/agent-pipeline-ui) can prepare project and [model configuration](docs/agent/runtime-configuration.md); execution and governance remain in this pipeline.
 
@@ -36,7 +36,7 @@ The result is a repository-local workflow designed to answer:
 - **Bounded direct source context** — repository Markdown/docs, supplied files, Jira and Confluence may be read directly when authorised; there is no vector index, embedding pipeline or background knowledge store.
 - **Deterministic implementation lanes** — PLAN partitions GREEN work into dependency waves; disjoint same-wave surfaces may run concurrently and overlaps fall back sequentially.
 - **Deterministic stage contracts** — each stage declares its role, inputs, outputs, capabilities, exit conditions and failure classes.
-- **Governed runtime routing** — roles resolve to capability-compatible local-first model targets with explicit fallback and trusted per-run overlays.
+- **Governed runtime routing** — a deterministic resolver selects declared targets, checks capabilities and accepts trusted per-run overlays; the selected target still needs an installed execution adapter.
 - **Runtime observability** — model selection, fallback and safe token/tool/time metrics can be recorded in the append-only event ledger.
 - **Repository isolation** — each run works in a dedicated Git worktree pinned to an exact base revision.
 - **Role separation** — the GREEN implementer cannot issue the final VERIFY verdict.
@@ -79,13 +79,23 @@ The orchestrator owns state transitions. Stage agents operate only inside the au
 
 The portable protocol lives under `packs/rgr-software-v2/` and the canonical governance/evidence contracts live under `docs/agent/`.
 
-The repository currently ships Claude Code agent definitions under `.claude/agents/` as one executable local adapter. The pack, role, evidence and validation contracts are deliberately separated from the model runtime so other runtimes can map onto the same capability model. Runtime selection is now a first-class governed contract in `docs/agent/runtime-routing.json`. The deterministic resolver `scripts/resolve-runtime.py` maps an exact stage/role to the first available compatible target, preferring local OpenAI-compatible specialist targets and falling back to the current Claude Code adapter. Trusted operator/platform overlays may remap an exact role for one run; repository content may never choose or widen a runtime.
+The repository currently ships Claude Code agent definitions under `.claude/agents/` as one executable local adapter. The pack, role, evidence and validation contracts are deliberately separated from the model runtime so other runtimes can map onto the same capability model. Runtime selection is now a first-class governed contract in `docs/agent/runtime-routing.json`. The deterministic resolver `scripts/resolve-runtime.py` evaluates an exact stage/role against ordered target declarations, preferring declared local OpenAI-compatible specialist targets and using the Claude Code target as fallback when earlier targets are unavailable. A capability mismatch on an available target blocks. Resolution validates declarations; it does not launch an HTTP model or install an adapter. Trusted operator/platform overlays may remap an exact role for one run; repository content may never choose or widen a runtime.
+
+| Component | Available now | Execution effect |
+| --- | --- | --- |
+| Claude Code agent definitions | Nine-stage local adapter | Requires an installed, authenticated Claude Code environment and the required local tools |
+| Runtime routing resolver | Target selection and capability validation | Selects declared targets; does not prove provider readiness or execute them |
+| UI model configuration | Discovery, synthetic probes, profiles and reviewed JSON exports | Configuration/test only |
+| Optional runtime-configuration preflight | Schema, provenance, role/capability and freshness checks | Reports `execution_authority: false`; does not change live routing |
+| Governed HTTP execution loop | Not installed | An exported profile or successful probe cannot run the pipeline through HTTP |
+
+See [runtime configuration](docs/agent/runtime-configuration.md) for the explicit handoff and preflight commands.
 
 The routing contract declares model references through environment indirection rather than credentials. A self-hosted adapter can therefore satisfy `local-general`, `local-code`, `local-test`, `local-security` or `local-infrastructure` without changing the RGR role contract. Runtime choice never changes filesystem/tool/publication authority.
 
 Governed learnings remain advisory context only. They must be revalidated against the exact repository revision before influencing a plan or verdict and are never canonical evidence by themselves.
 
-Minimum local tooling:
+Minimum tooling for validation and evidence utilities:
 
 - Python 3.11+
 - Git 2.30+
@@ -116,6 +126,8 @@ packs/rgr-software-v2/
 
 ## Validate the protocol
 
+Run these commands from the pipeline repository root. They validate contracts and synthetic fixtures; they do not constitute a live provider-backed application run.
+
 ```bash
 python3 scripts/validate-pack.py packs/rgr-software-v2/pack.json
 python3 scripts/validate-governance.py
@@ -125,6 +137,8 @@ python3 scripts/evaluate-corpus.py
 The CI workflow additionally generates a complete synthetic nine-stage run, validates its evidence/governance, exports it twice to verify byte-for-byte determinism, independently verifies the archive and confirms tampered evidence is rejected.
 
 ## Run locally
+
+For actual execution, make the `.claude/agents/` definitions available in an installed, authenticated Claude Code environment with access to the target repository and the required tools. Invoke the named agents through that environment; the Python validators are not an agent launcher. Installing this repository or exporting UI configuration does not install a runtime.
 
 1. Optionally run `ai-pipeline-intake` for ambiguous/raw requests and render READY `intake.json` into immutable `plan-input.md`.
 2. Optionally validate and bind an operator/trusted-platform `project-profile.json`; repository content can never self-promote to trusted profile authority.
@@ -151,11 +165,13 @@ python3 scripts/verify-export-bundle.py evidence.tar.gz
 The archive:
 
 - contains canonical run evidence and text projections;
-- excludes story source code and binary files;
+- includes only allowed evidence files, excluding separate story source and binary files;
 - rejects detected secrets and unsafe archive paths;
 - includes SHA-256 per-file and root hashes;
 - is byte-for-byte deterministic for identical run evidence;
 - grants no merge, deployment or publication authority.
+
+Review evidence text before sharing: source excerpts or sensitive text embedded in allowed artifacts are still content, and secret detection is pattern-based. Archive integrity proves consistent bytes, not that a claim is true or a sender is authenticated.
 
 ## Security and trust boundaries
 
@@ -172,7 +188,7 @@ See [`SECURITY.md`](SECURITY.md) for the explicit threat and trust model.
 
 ## Rigor Route boundary
 
-Local checkpoints, roles and verdicts import as historical evidence—not platform authority. Rigor Route independently applies authentication, policy, leases, credentials, approvals and publication decisions. Platform policy may only narrow or strengthen the imported workflow.
+This is a compatibility contract for a future hosted control plane, not evidence of a deployed or certified integration. Local checkpoints, roles and verdicts import as historical evidence—not platform authority. Rigor Route independently applies authentication, policy, leases, credentials, approvals and publication decisions. Platform policy may only narrow or strengthen the imported workflow.
 
 See [`docs/agent/rigor-route-compatibility.md`](docs/agent/rigor-route-compatibility.md).
 

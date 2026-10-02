@@ -60,7 +60,7 @@ Work through these against the touched files:
 ### 8. Log hygiene
 - No `System.out.println`, no `printStackTrace`, no `e.printStackTrace()`.
 - Use structured logging per `skill-observability`. Include correlation IDs.
-- Never log secrets, tokens, PII, full request bodies. Use `LogSanitizer`.
+- Never log secrets, tokens, PII or full request bodies. Omit/mask sensitive fields; use `LogSanitizer` only for control characters in approved non-sensitive fields.
 
 ### 9. Stream + Optional usage
 - Streams for transformation, not for side effects. No `.forEach(x -> someField += ...)`.
@@ -88,5 +88,5 @@ behavior_preserved_by: {which tests cover this code}
 - No behavior changes. Ever. If the test suite output changes, you broke something.
 - No API/DB contract drift.
 - No renaming of public methods, DTO fields, or DB columns without explicit approval.
-- If a cleanup would require changing a test, stop — that is a behavior change, not a refactor.
+- Test structure/names may be cleaned up through `skill-test-maintenance` if assertions, scenario coverage and observable intent are preserved. Stop if making a refactor pass requires weakening or changing expected behavior.
 - If unsure whether a cleanup is safe, leave the code and log `[UNCERTAIN]`.

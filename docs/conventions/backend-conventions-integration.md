@@ -1,174 +1,50 @@
 # Backend Conventions — External Integrations
 
-**Scope: backend stacks calling external systems.** Examples below target Java + Spring `RestTemplate` / JAX-RS / JAXB. The *principles* — adapter boundary per dependency, explicit retry/idempotency, distinguish transient vs terminal, structured logging for external calls, secrets via env — generalize to any HTTP / message-broker / streaming integration in any stack (`fetch` + `undici` in Node, `httpx` in Python, `net/http` in Go, `HttpClient` in .NET).
+**Scope: code that calls external services, brokers, object stores or file-transfer systems.** Apply the target stack's supported client libraries and existing project conventions. Integration helpers inherit the calling stage's authority; verification roles do not edit story code.
 
-Applies to: `ai-pipeline-integration`, `ai-pipeline-green-code`, `ai-pipeline-observability`.
+## Adapter boundary
 
-## Adapter Design
-- Encapsulate each external dependency behind a service/adapter boundary.
-- Keep mapping between external and internal models explicit.
-- Name external API services: `{Service}ApiService` (e.g., `HstApiService`, `TnsGoApiService`).
-
-## RestTemplate Configuration
-
-### Multiple Named Beans
-```java
-@Bean
-@Primary
-public RestTemplate restTemplate() {
-    return new RestTemplate();
-}
-
-@Bean
-public RestTemplate tnsRestTemplate() {
-    SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-    BufferingClientHttpRequestFactory buffering = new BufferingClientHttpRequestFactory(factory);
-    RestTemplate restTemplate = new RestTemplate(buffering);
-    restTemplate.getInterceptors().add(new TnsGoInterceptor(objectMapper()));
-    return restTemplate;
-}
-```
-
-### HTTP Interceptor Pattern
-```java
-public class TnsGoInterceptor implements ClientHttpRequestInterceptor {
-    @Override
-    public ClientHttpResponse intercept(HttpRequest request, byte[] body, 
-            ClientHttpRequestExecution execution) throws IOException {
-        // Add headers, logging, etc.
-        return execution.execute(request, body);
-    }
-}
-```
-
-### JAX-RS ClientRequestFilter
-```java
-@Slf4j
-public class ApiLoggingFilter implements ClientRequestFilter {
-    @Override
-    public void filter(ClientRequestContext ctx) throws IOException {
-        log.debug("Request URI: {}", ctx.getUri());
-        log.debug("Request Method: {}", ctx.getMethod());
-        log.debug("Request Headers: {}", ctx.getHeaders());
-    }
-}
-```
-
-## Custom Deserializers
-For complex API responses:
-```java
-public class TnsBranchResponseDeserializer extends JsonDeserializer<TnsBranchResponse> {
-    @Override
-    public TnsBranchResponse deserialize(JsonParser p, DeserializationContext ctx) {
-        // Custom deserialization logic
-    }
-}
-
-// Registration
-ObjectMapper objectMapper = new ObjectMapper();
-SimpleModule module = new SimpleModule();
-module.addDeserializer(TnsBranchResponse.class, new TnsBranchResponseDeserializer());
-objectMapper.registerModule(module);
-```
-
-## XML/JAXB Processing
-
-### Secure DocumentBuilder
-```java
-@Bean
-public DocumentBuilder secureDocumentBuilder() throws ParserConfigurationException {
-    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-    dbf.setValidating(false);
-    dbf.setNamespaceAware(true);
-    dbf.setFeature("http://xml.org/sax/features/namespaces", false);
-    dbf.setFeature("http://xml.org/sax/features/validation", false);
-    dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
-    dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-    return dbf.newDocumentBuilder();
-}
-```
-
-### Secure JAXB Unmarshalling
-```java
-JAXBContext context = JAXBContext.newInstance(HstAllData.class);
-Unmarshaller unmarshaller = context.createUnmarshaller();
-try { unmarshaller.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, ""); } catch (Exception ignored) {}
-try { unmarshaller.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, ""); } catch (Exception ignored) {}
-```
-
-### XML Model Classes
-```java
-@Data
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "dataRecord")
-public class DataRecord implements Serializable {
-    @XmlAttribute
-    private String dpNumber;
-
-    @XmlElement(name = "owner")
-    private XmlOwner xmlOwner;
-
-    @XmlElementWrapper(name = "addresses")
-    @XmlElement(name = "address")
-    private List<XmlAddress> addresses = new ArrayList<>();
-}
-```
-
-## ZIP Stream Processing
-```java
-@Transactional
-public Boolean importData() throws IOException {
-    try (CustomZipInputStream zis = new CustomZipInputStream(apiService.requestData())) {
-        ZipEntry entry;
-        while ((entry = zis.getNextEntry()) != null) {
-            if (entry.getName().endsWith(".xml")) {
-                Document xml = documentBuilder.parse(new InputSource(zis));
-                processXml(xml);
-            }
-        }
-        return true;
-    } catch (Exception e) {
-        log.error("RPA-ERROR-IMPORT: {}", e.getLocalizedMessage(), e);
-        return false;
-    }
-}
-```
+- Place each external dependency behind a small application-owned adapter.
+- Keep transport models separate from domain/API models; validate and map fields explicitly.
+- Reuse existing client configuration, authentication and tracing rather than creating an unconfigured client per call.
+- Declare base URLs, credentials, TLS policy, connection/read timeouts and response-size limits in project configuration. Never disable certificate verification as a connectivity fix.
+- For Spring projects, use the project's supported configured client builder; bare client construction may bypass trace propagation and project interceptors.
 
 ## Reliability
-- Handle retries/idempotency explicitly where needed.
-- Distinguish transient vs terminal failures.
-- Emit actionable errors and metrics.
-- Use structured logging for external calls.
+
+- Bound timeouts and total retry budgets; classify transient and deterministic failures.
+- Retry a write only when its idempotency contract makes that safe.
+- Preserve cancellation and propagate terminal failures; returning a success-shaped value after catching an exception hides failed work.
+- Record enough non-sensitive context to diagnose the failed operation.
+- Keep remote I/O outside database transactions; validate/fetch first, then perform a bounded local write unit. Define partial-failure and replay behaviour explicitly.
+
+## Logging
+
+Log operation, outcome, duration and an approved correlation identifier. Do not dump request headers, full URLs with query values, payloads, tokens or raw responses. An allowlist of safe fields is preferable to attempting to sanitize entire objects. Newline sanitization is not secret redaction.
 
 ```java
-log.info("TNS check existing of outlet: {} with response: {}",
-    outlet, LogSanitizer.getSanitizedStringForLogging(response.toString()));
+log.info("External lookup completed, outcome: {}, durationMs: {}", outcome, durationMs);
 ```
+
+## XML and archives
+
+Follow `backend-conventions-security.md` for hardened XML parsing. Feed JAXB from a hardened parser/source; do not catch and ignore failed security settings. Reject unsafe archive paths and enforce entry/expanded-size limits before processing. Close streams deterministically and keep download/decompression outside database transactions.
 
 ## Configuration
-- Endpoint URLs and credentials via environment/config only.
-- No environment-specific constants in business code.
+
+Use project-specific service names and approved environment/secret references, for example:
 
 ```yaml
-tnsgo:
-  baseUrl: ${TNS_BASE_URL}
-  apiKey: ${TNS_API_KEY}
-
-hst:
-  baseUrl: ${HST_BASE_URL}
+external-service:
+  base-url: ${EXTERNAL_SERVICE_BASE_URL}
+  api-key: ${EXTERNAL_SERVICE_API_KEY}
 ```
 
-## History/Audit Tracking
-Track import/sync operations:
-```java
-historyService.updateTnsHistory(totalProcessed, totalUpdated, totalAdded);
-log.info("Sync complete, total: {}, created: {}, updated: {}",
-    total, added, updated);
-```
+These names are illustrative; they are not environment variables required by the pipeline.
 
-## Testing
-- Mock external systems in unit/slice tests.
-- Cover failure modes and timeout behavior.
-- Use test configuration with mock endpoints.
+## Verification and evidence
 
-
+- Mock application-owned adapters in focused unit tests.
+- Use controlled HTTP/broker/database test infrastructure to verify actual serialization, authentication headers, timeouts, cancellation and error mapping.
+- Cover negative responses, malformed/oversized input, rate limits and retry/idempotency behaviour.
+- Record command results, contract impact and any unresolved issue in canonical stage evidence and the append-only decision log.

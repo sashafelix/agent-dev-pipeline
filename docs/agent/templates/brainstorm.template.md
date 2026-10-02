@@ -1,4 +1,6 @@
-# Brainstorm
+# Brainstorm Projection
+
+Canonical artifact: `brainstorm.json`. This Markdown file is a reviewer projection, not a substitute for schema validation.
 
 story_id: <story-id>
 captured_at: <iso-timestamp>
@@ -25,7 +27,7 @@ Every SC must be a testable GIVEN/WHEN/THEN assertion. These are the goal state 
 
 | SC ID | Statement | Verified by | Source |
 | --- | --- | --- | --- |
-| SC-1 | GIVEN ... WHEN ... THEN ... | unit \| integration \| contract \| e2e \| security | jira AC-1 \| brainstorm-derived \| compliance-rule |
+| SC-1 | GIVEN ... WHEN ... THEN ... | unit \| integration \| contract \| e2e \| security \| static \| manual | jira AC-1 \| brainstorm-derived \| compliance-rule |
 | SC-2 | GIVEN ... WHEN ... THEN ... | ... | ... |
 
 ## 4. Edge Cases Considered
@@ -41,7 +43,7 @@ Every SC must be a testable GIVEN/WHEN/THEN assertion. These are the goal state 
 | Idempotency / replay | y/n | |
 
 ## 5. Assumptions & Unknowns
-| ID | Assumption or unknown | [UNCERTAIN]? | Resolution plan |
+| ID | Assumption or unknown | Status: resolved / accepted_warning / blocking | Resolution plan |
 | --- | --- | --- | --- |
 | A-1 | | | |
 

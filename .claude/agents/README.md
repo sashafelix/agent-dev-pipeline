@@ -36,7 +36,7 @@ python3 scripts/export-run-bundle.py docs/agent/runs/{story_id} evidence.tar.gz
 python3 scripts/verify-export-bundle.py evidence.tar.gz
 ```
 
-The archive contains no story source, secrets or publication authority.
+The archive excludes separate story source files and rejects detected secrets; allowed evidence text may still contain excerpts or undetected sensitive content. Review it before sharing. It carries no publication authority.
 
 
 ## Trusted project profiles and GREEN lanes

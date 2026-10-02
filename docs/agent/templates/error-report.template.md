@@ -1,7 +1,7 @@
 # Error Report
 
 story_id: <story-id>
-failed_stage: brainstorm | red_test | green_code | refactor | quality_gate
+failed_stage: prepare | brainstorm | plan | analyze | red_test | green_code | refactor | quality_gate | converge
 failed_at: <iso-timestamp>
 worktree_preserved_at: .agent-runs/<story-id>
 branch: story/<story-id>

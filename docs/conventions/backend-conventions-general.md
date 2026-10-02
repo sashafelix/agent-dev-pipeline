@@ -48,7 +48,7 @@ The examples in these files assume the historical reference stack below. Your pr
 - No secrets in code/config tracked in repo.
 
 ## Testing + TDD
-- Mandatory BRAINSTORM -> RED -> GREEN -> REFACTOR -> VERIFY.
+- Mandatory PREPARE -> BRAINSTORM -> PLAN -> ANALYZE -> RED -> GREEN -> REFACTOR -> VERIFY -> CONVERGE.
 - Add/adjust tests for each behavior change.
 - Keep test names behavior-focused (`method_condition_expectedBehavior` in JUnit; adapt to the stack's convention).
 

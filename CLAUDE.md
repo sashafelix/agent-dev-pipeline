@@ -45,7 +45,7 @@ python3 scripts/export-run-bundle.py docs/agent/runs/{story_id} evidence.tar.gz
 python3 scripts/verify-export-bundle.py evidence.tar.gz
 ```
 
-Exports contain no story source, binaries, detected secrets, credentials or publication authority.
+Exports allow only evidence files, reject binaries/unsafe paths and detected secret patterns, and carry no publication authority. Embedded excerpts or undetected sensitive text can remain in allowed evidence; review content before sharing.
 
 ## Role boundaries
 

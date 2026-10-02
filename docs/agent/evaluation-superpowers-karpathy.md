@@ -2,26 +2,24 @@
 
 **Date:** 2026-04-20
 **Scope:** Full review of the agent/skill architecture against [obra/superpowers](https://github.com/obra/superpowers) and [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) principles.
-**Status:** **Implemented.** All HIGH and MED recommendations below have been applied. This document is retained as a historical rationale for why the current pipeline looks the way it does. See the *Implementation status* block after the Executive Summary for a per-recommendation map.
+**Status:** Historical design review. The original gap analysis and recommendations below describe the April 2026 review, not current runtime requirements. The live stage contracts, canonical JSON schemas and selected workflow profile are authoritative. The current implementation map below replaces the older Markdown-only checklist mapping.
 
 ---
 
 ## 1. Executive Summary
 
-The agent architecture is **well-structured** with clear stage ownership, deterministic TDD flow, and explicit handoffs. The original review found that several high-impact principles from both source repos were missing. The gap analysis and recommendations below have all been applied — the pipeline now codifies comprehension protocols, incremental verification, self-check blocks, Rule of Three, and the search-before-create mandate.
+The agent architecture is **well-structured** with clear stage ownership, deterministic TDD flow, and explicit handoffs. The original review found that several high-impact principles from both source repos were missing. The pipeline has since evolved to nine stages with canonical JSON evidence. Comprehension and incremental checks remain; style heuristics are contextual review guidance, not universal release gates.
 
-### Implementation status (snapshot)
+### Current implementation map
 
-| Recommendation | Status | Lives in |
-| --- | --- | --- |
-| 3.1 Comprehension Protocol on all stage agents | ✅ applied | `.claude/agents/ai-pipeline-red-test.md`, `.claude/agents/ai-pipeline-green-code.md`, `.claude/agents/ai-pipeline-refactor.md` |
-| 3.2 Incremental Verification in GREEN & REFACTOR | ✅ applied | same agents — `checkpoints:` in handoff |
-| 3.3 "Don't guess — search" mandate | ✅ applied | `CLAUDE.md` non-negotiables |
-| 3.4 Self-Check block per stage | ✅ applied | each stage agent's `Self-Check` section; recorded in `handoff.md` |
-| 3.5 Karpathy code-simplicity rules | ✅ applied | `backend-conventions-java-style.md` (Code Simplicity Rules); principles echoed in `CLAUDE.md` |
-| 3.6 Quality-gate hard-FAIL checklist | ✅ applied | `.claude/agents/ai-pipeline-quality-gate.md` + `quality-gates.template.md` section 3 |
-| 3.7 Uncertainty protocol in decision-log | ✅ applied | `backend-conventions-rgr.md` + `decision-log.template.md` `[UNCERTAIN]` section |
-| 4.0 `skill-codebase-comprehension` | ✅ created | `docs/skills/skill-codebase-comprehension.md` |
+| Review theme | Current source |
+| --- | --- |
+| Comprehension and search before edits | RED/GREEN/REFACTOR agent definitions; `skill-codebase-comprehension.md` |
+| Incremental verification and self-check evidence | Canonical `stage-result.schema.json` for RED/GREEN/REFACTOR, their stage contracts and instructions |
+| Simplicity and pattern reuse | Applicable Java-style conventions and cleanup helper |
+| Independent verification and hard failures | VERIFY contract, `quality-gates.schema.json`, selected profile and projection template |
+| Blocking uncertainty | BRAINSTORM/ANALYZE contracts and decision-log template |
+| Stage order and helper authority | `AGENTS.md`, `docs/skills/README.md` and role contracts |
 
 Extensions added beyond the original review:
 - **Brainstorm stage**: declarative SCs now gate planning and RED.
@@ -35,7 +33,7 @@ Extensions added beyond the original review:
 
 ### 2.1 Superpowers Principles (obra/superpowers)
 
-| Principle | Current Status | Gap | Priority |
+| Principle | Status at original review | Gap | Priority |
 |-----------|---------------|-----|----------|
 | **Read before write** — always read existing code before modifying | Partially implied in conventions | Not enforced in agent instructions | 🔴 HIGH |
 | **Verify after every change** — run tests/checks after each edit | Quality gate at end only; no per-edit verification | Missing incremental verification in GREEN/REFACTOR | 🔴 HIGH |
@@ -50,7 +48,7 @@ Extensions added beyond the original review:
 
 ### 2.2 Karpathy Principles (andrej-karpathy-skills)
 
-| Principle | Current Status | Gap | Priority |
+| Principle | Status at original review | Gap | Priority |
 |-----------|---------------|-----|----------|
 | **Write simple, boring code** — avoid cleverness, prefer readability | Java style conventions mention readability | Not explicit enough as a core mandate | 🟡 MED |
 | **Avoid premature abstraction** — don't DRY until 3+ duplications | GREEN says "no speculative abstractions" | Good. Could strengthen with Rule of Three | 🟢 LOW |
@@ -78,7 +76,7 @@ Add to `.claude/agents/ai-pipeline-green-code.md`, `.claude/agents/ai-pipeline-r
 ## Comprehension Protocol (before writing any code)
 1. **Read** all files you intend to modify — never write blind.
 2. **Trace** the call chain: controller → service → repository → entity for the feature area.
-3. **Search** the codebase (`grep`/semantic search) for existing patterns that solve similar problems.
+3. **Search** the codebase (`rg` or direct bounded repository reads) for existing patterns that solve similar problems.
 4. **Match** the style and patterns of neighboring code — don't introduce new conventions.
 5. **State** your understanding in the decision-log before writing code.
 ```
@@ -199,4 +197,4 @@ Systematically read and understand existing code before making changes.
 
 ## 6. Decision
 
-**Resolved:** All HIGH and MED recommendations above were implemented. See the *Implementation status* block at the top of this document for the per-recommendation map to the live files.
+**Historical decision:** Adopt comprehension, explicit uncertainty and incremental verification. Use the current implementation map above for live contracts; the proposed section names and file edits in the historical tables are not current instructions.

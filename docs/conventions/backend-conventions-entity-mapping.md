@@ -2,7 +2,7 @@
 
 **Scope: backend stacks with an ORM and DTO layer.** Examples below target Java + JPA + Lombok + MapStruct. The *principles* — audit fields on mutable entities, business-key equality, explicit fetch/cascade, DTO↔entity separation via a mapper — generalize to Node + TypeORM/Prisma, Python + SQLAlchemy/Django, Go + GORM, .NET + EF Core. Adapt idioms to the stack.
 
-Applies to: `ai-pipeline-entity`, `ai-pipeline-green-code`, `ai-pipeline-api`.
+Applies to: relevant stage agents through the matching `docs/skills/` helpers. Helpers inherit the caller’s role and write limits; verification helpers inspect and report only.
 
 ## Base Entity Pattern
 
@@ -59,7 +59,7 @@ public class Outlet extends AbstractBaseEntity implements Serializable {
     @EqualsAndHashCode.Include
     private String outletNumber;  // Business key
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "legal_entity_fk", referencedColumnName = "id")
     @ToString.Exclude
     private LegalEntity legalEntity;
@@ -76,7 +76,7 @@ public class Outlet extends AbstractBaseEntity implements Serializable {
 - Use `@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)`.
 - Use `@EqualsAndHashCode.Include` on business key fields (not ID).
 - Use `@ToString.Exclude` on relationships to prevent infinite loops.
-- Use `allocationSize = 1` for sequence generators (PostgreSQL compatibility).
+- Match sequence allocation to the actual database sequence and project strategy; allocation size 1 is an example, not a PostgreSQL requirement.
 - Explicit `@Column` constraints: `nullable = false` for required fields.
 - Lazy fetch for collections, explicit cascade rules.
 - Use `orphanRemoval = true` for owned collections.
@@ -216,7 +216,7 @@ public interface XmlOutletMapper {
 <annotationProcessorPaths>
     <path><groupId>org.mapstruct</groupId><artifactId>mapstruct-processor</artifactId></path>
     <path><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId></path>
-    <dependency><groupId>org.projectlombok</groupId><artifactId>lombok-mapstruct-binding</artifactId></dependency>
+    <path><groupId>org.projectlombok</groupId><artifactId>lombok-mapstruct-binding</artifactId></path>
 </annotationProcessorPaths>
 <compilerArgs>
     <compilerArg>-Amapstruct.defaultComponentModel=spring</compilerArg>
@@ -226,6 +226,6 @@ public interface XmlOutletMapper {
 ## Guardrails
 - No entity leakage in controller responses.
 - Ensure mapping updates whenever fields change.
-- Use `@Mapping(target = ..., ignore = true)` for unmapped fields.
+- Explicitly map required fields. Use `ignore = true` only for intentionally excluded fields; do not silence missing mappings that affect the contract.
 
 

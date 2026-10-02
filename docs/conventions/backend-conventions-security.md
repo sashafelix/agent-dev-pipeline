@@ -1,168 +1,53 @@
 # Backend Conventions — Security
 
-**Scope: backend stacks.** Examples below target Spring Security (filter chain, `@PreAuthorize`, `SecurityContextHolder`). The *principles* — token-based auth, explicit endpoint authorization, fail-closed defaults, CORS allowlist, log sanitization, secret externalization, secure XML parsing — apply to any backend. Translate to the stack's mechanism (Express middleware, NestJS guards, FastAPI dependencies, Go middleware, ASP.NET authorization policies).
+**Scope: applicable backend services.** Spring examples are reference patterns, not a security configuration installed by the pipeline. Follow the target project's approved authentication, authorization and deployment design. Relevant helpers inherit their calling stage's role and write limits; VERIFY inspects and reports only.
 
-Applies to: `ai-pipeline-security`, `ai-pipeline-api`, `ai-pipeline-integration`, `ai-pipeline-observability`.
+## Authentication and authorization
 
-## AuthN/AuthZ
-- Token-based auth flow (Bearer token).
-- Explicit endpoint role checks with `@PreAuthorize`.
-- Fail closed by default.
+- Use the project's maintained authentication integration and validate credentials before establishing a security context.
+- Require authentication by default; define and test role/permission checks for each protected operation.
+- In Spring, `@PreAuthorize` requires method security to be enabled. It is authorization, not a replacement for authentication. See [method security](https://docs.spring.io/spring-security/reference/servlet/authorization/method-security.html).
+- Distinguish unauthenticated and forbidden requests using the configured API error contract. Never expose raw authentication exceptions to clients.
+- Prefer the framework's supported bearer-token/resource-server integration to an incomplete custom filter. A username helper must handle absent/anonymous authentication; a fallback audit label must never grant authorization.
 
-### Role-Based Authorization
-```java
-@PreAuthorize("hasAuthority('User')")
-@GetMapping("/import")
-public String importData() { ... }
-```
+## HTTP security configuration
 
-## Security Filter Chain
-
-### Profile-Based Configuration
-```java
-@Bean
-@Profile("!local")
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.cors(Customizer.withDefaults())
-        .csrf(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(authorize ->
-            authorize.requestMatchers(
-                    antMatcher("/swagger-ui/**"),
-                    antMatcher("/v3/**"),
-                    antMatcher("/actuator/**")).permitAll()
-                .anyRequest().authenticated())
-        .addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter.class);
-    return http.build();
-}
-
-@Bean
-@Profile("local")
-public SecurityFilterChain securityFilterChainLocal(HttpSecurity http) throws Exception {
-    http.cors(Customizer.withDefaults())
-        .csrf(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(authorize ->
-            authorize.requestMatchers(antMatcher("/**")).permitAll());
-    return http.build();
-}
-```
-
-### Permitted Endpoints
-- `/swagger-ui/**` - API documentation
-- `/v3/**` - OpenAPI spec
-- `/actuator/**` - Health/metrics endpoints
-
-### Role Prefix Removal
-```java
-@Bean
-GrantedAuthorityDefaults grantedAuthorityDefaults() {
-    return new GrantedAuthorityDefaults("");  // Remove 'ROLE_' prefix
-}
-```
-
-## Custom Authentication Filter
-```java
-public class CustomFilter extends OncePerRequestFilter {
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, 
-            HttpServletResponse response, FilterChain filterChain) {
-        // Skip non-API paths
-        if (!request.getRequestURI().startsWith("/api")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        
-        try {
-            String tokenHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-            if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
-                String token = tokenHeader.substring(7);
-                Authentication auth = authManager.authenticate(;...);
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
-        } catch (Exception e) {
-            SecurityContextHolder.clearContext();
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
-            return;
-        }
-        filterChain.doFilter(request, response);
-    }
-}
-```
-
-## UserContextHolder Pattern
-Static utility for accessing current user context:
-```java
-public class UserContextHolder {
-    public static UserDetails getUserInfo() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth.getPrincipal() instanceof UserDetails) {
-            return (UserDetails) auth.getPrincipal();
-        }
-        return null;
-    }
-
-    public static String getUsername() {
-        return getUserInfo() != null ? getUserInfo().getUsername() : "System";
-    }
-
-    public static boolean hasUserRole(String role) {
-        UserDetails user = getUserInfo();
-        return user != null && user.getAuthorities().stream()
-            .anyMatch(a -> a.getAuthority().equals(role));
-    }
-}
-```
-
-## JPA Audit Integration
-Use `@PrePersist` and `@PreUpdate` lifecycle callbacks:
-```java
-@PrePersist
-public void prePersist() {
-    setUserCreated(UserContextHolder.getUsername());
-    setUserChanged(UserContextHolder.getUsername());
-}
-
-@PreUpdate
-public void preUpdate() {
-    setUserChanged(UserContextHolder.getUsername());
-}
-```
-
-## CORS Configuration
-```java
-@Bean
-public UrlBasedCorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration config = new CorsConfiguration();
-    config.setAllowedOrigins(properties.getCors());
-    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-    config.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
-    config.setAllowCredentials(true);
-
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", config);
-    return source;
-}
-```
-
-## Secure Coding
-- Sanitize user-controlled strings in logs using `LogSanitizer`.
-- Never hardcode secrets.
-- Keep secret/config resolution externalized via environment variables.
-- Configure secure XML parsing (disable external DTD loading).
+A minimal authorization fragment keeps every route authenticated:
 
 ```java
-DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+http.cors(Customizer.withDefaults())
+    .authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
 ```
 
-## Error Handling
-- Unauthorized/forbidden behavior must be deterministic and test-covered.
-- Do not expose sensitive internals in auth errors.
-- Use dedicated exceptions: `RpaAuthenticationException`, `AccessDeniedException`.
+This fragment assumes the application separately configures its authentication mechanism, CORS and applicable method security. It intentionally leaves CSRF protection enabled. Disable or narrow CSRF protection only for a reviewed authentication/client model; being stateless alone does not establish that a browser-facing service is safe from CSRF. See [Spring Security CSRF](https://docs.spring.io/spring-security/reference/features/exploits/csrf.html).
 
-## Security Tests
-- Include role-based access tests for changed endpoints.
-- Include negative-path auth tests where relevant.
-- Test both `@WithMockUser` and `@WithAnonymousUser` scenarios.
+Do not make `/actuator/**`, `/v3/**` or `/swagger-ui/**` public by default. If unauthenticated infrastructure probes are required, allow only the exact probe paths under the deployment's network restrictions and suppress sensitive health details. Keep documentation, metrics and other management endpoints subject to explicit policy.
 
+Local development should use test identities or a mock authentication provider. Any deliberate authentication bypass must be isolated from shared environments and production; a profile name alone is not isolation.
 
+## CORS
+
+- Configure explicit approved origins, methods and headers.
+- Permit credentials only when required by the client/authentication model.
+- Do not use a wildcard origin for credentialed browser access.
+- CORS is not authentication and does not constrain server-to-server clients.
+
+## Logging and sensitive data
+
+Choose non-sensitive fields before logging. Omit or explicitly mask credentials, tokens, personal identifiers and raw request/response bodies. Test the actual output for representative sensitive values.
+
+The `LogSanitizer` helper replaces newline, carriage-return and tab characters to limit log injection. It does **not** mask secrets or PII. Parameterized logging also does not redact values automatically.
+
+## XML and external input
+
+Use a hardened parser for untrusted XML: disallow unnecessary DTDs and external entity/schema access, disable XInclude where applicable, and enforce size/depth/expansion limits. Do not silently ignore failures to apply required parser protections. JAXB must receive an appropriately hardened XML source; setting unsupported properties and continuing after failure is not protection.
+
+Validate external archive entry paths and bound entry count, decompressed bytes and expansion ratios before processing. Keep credentials/configuration external to tracked source.
+
+## Verification
+
+- Test allowed and denied roles plus unauthenticated requests using the real security configuration.
+- Include CSRF cases when the application uses browser/session authentication.
+- Verify management endpoint exposure and error-response content.
+- Assert sensitive values are absent from telemetry and responses.
+- Record exact commands/results in canonical stage evidence. A helper checklist is not proof by itself.

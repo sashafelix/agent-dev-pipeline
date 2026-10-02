@@ -3,10 +3,10 @@
 Skills are reusable capabilities called by stage agents. They do not own stage transitions.
 
 The pipeline is **stack-agnostic**. Skills fall into two groups:
-1. **Stack-neutral**: apply to any stack. Called on every run when relevant.
+1. **Shared principles**: apply when relevant, using the target stack’s mechanisms. Many helper examples are Java/Spring-specific.
 2. **Stack-specific**: apply only when the target `stack` matches (e.g., Java/Spring backend). The calling agent decides based on `run-context.md > stack` and `scope_tags`.
 
-## Stack-neutral skills
+## Shared helpers (examples may be stack-specific)
 - `skill-codebase-comprehension.md` — systematic read-and-understand before any write
 - `skill-project-scaffold.md` — bootstrap module/project structure (stack-agnostic with mapping table)
 - `skill-api-service.md` — HTTP/RPC surface patterns
@@ -29,7 +29,7 @@ Direct context lookup uses exact repository Markdown/docs, supplied files, or ex
 - `skill-transaction-policy.md` — transactional boundaries *(backends with DB writes)*
 - `skill-java-cleanup.md` — dead code, file size, Rule of Three, naming *(Java-style cleanup; the principles generalize; agent may apply analogous cleanup tools for other stacks if no equivalent skill exists)*
 
-## Conditional skills (create when needed)
+## Conditional helpers and future additions
 - `skill-scheduling.md` — when scheduled tasks / cron jobs are in scope (backend-cron, CI schedules, client polling)
 - `skill-caching.md` *(future)*
 - `skill-xml-jaxb.md` *(future — XML import/export)*
@@ -42,3 +42,9 @@ Direct context lookup uses exact repository Markdown/docs, supplied files, or ex
 - Read `docs/agent/learnings.json` at start, **filtered by `scope_tags`** matching the task (especially `stack:*`); append reusable candidate learnings with evidence.
 - Use `{project_root}` from run-context for all file paths.
 - No skill may unilaterally change stage; return control to the calling agent.
+
+## Shared authority and applicability
+
+Every helper inherits its caller’s stage, role, immutable context and permitted write surfaces. A listed Writes section applies only when that caller has the corresponding authority; helpers used by VERIFY or another read-only role may report findings but must not edit story code. No helper grants deployment or publication rights.
+
+Canonical JSON artifacts and stage/profile contracts take precedence over Markdown projections and illustrative snippets. Java/Spring examples are reference patterns for applicable projects, not dependencies or universal rules of the pipeline. Follow the target project’s approved stack and versions; placeholder classes and omitted setup make examples fragments, not complete applications.

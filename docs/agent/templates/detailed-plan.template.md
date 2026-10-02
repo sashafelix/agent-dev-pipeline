@@ -15,15 +15,16 @@ This Markdown file is a reviewer projection. `detailed-plan.json` is authoritati
 - Tasks are small, ordered, independently verifiable and acyclic.
 - Every task declares exact outputs, dependencies and covered `SC-{n}` criteria.
 - Every SC maps to at least one planned test ID before ANALYZE.
-- Lock the plan before ANALYZE exits; later scope changes require a new attempt.
+- Lock the plan before ANALYZE begins; later scope changes require a new attempt.
 
 ## Task graph
 
 | Task ID | Stage | Description | Depends on | Outputs | Covers SCs | Verification |
 |---|---|---|---|---|---|---|
-| TASK-1 | red_test | Add failing test for happy path | — | `<test-path>` | SC-1 | Intended failure captured |
-| TASK-2 | green_code | Implement minimum happy-path behaviour | TASK-1 | `<source-path>` | SC-1 | SC-1 test passes |
-| TASK-3 | refactor | Simplify implementation without behaviour change | TASK-2 | `<source-path>` | SC-1 | Full required suite stays green |
+| TASK-1 | red_test | Add failing backend and frontend tests | — | `backend/tests/example.test`, `frontend/tests/example.test` | SC-1 | Intended failures captured |
+| TASK-2 | green_code | Implement backend behaviour | TASK-1 | `backend/src/example` | SC-1 | Backend test passes |
+| TASK-3 | green_code | Implement frontend behaviour against the locked contract | TASK-1 | `frontend/src/example` | SC-1 | Frontend test passes |
+| TASK-4 | refactor | Simplify implementation without behaviour change | TASK-2, TASK-3 | `backend/src/example`, `frontend/src/example` | SC-1 | Required suite stays green |
 
 ## Implementation lanes
 
@@ -45,7 +46,7 @@ Rules:
 
 | SC | Planned test IDs | Test type | Expected RED reason |
 |---|---|---|---|
-| SC-1 | TEST-1 | unit | Required behaviour absent |
+| SC-1 | TEST-1, TEST-2 | unit | Required behaviour absent |
 
 ## Contract and risk surfaces
 

@@ -92,7 +92,7 @@ public void runDailyImport() { ... }
 ## Error Handling
 - Always wrap scheduled logic in try/catch.
 - Log errors with structured prefix (e.g., `RPA-SCHEDULER:`).
-- Do not let unchecked exceptions propagate out of `@Scheduled` methods (stops the scheduler).
+- Define and test the scheduler’s error handling and recurrence behaviour. Do not assume every thrown exception stops every Spring scheduler; behaviour depends on the task and error handler.
 
 ## History / Audit Tracking
 Record scheduled job outcomes in a history table:
@@ -113,7 +113,7 @@ void runDailyImport_withValidData_shouldComplete() {
 
 ## Guardrails
 - Externalize cron expressions to config — never hardcode in production.
-- Use try/catch in every scheduled method to prevent scheduler thread death.
+- Report failures through the configured error handler or an explicit catch; test subsequent execution and avoid silently swallowing failures.
 - Log entry and exit of every scheduled job.
 - Document schedule rationale and timezone in decision log.
 - Test scheduled logic directly (unit), not by triggering schedule timer.

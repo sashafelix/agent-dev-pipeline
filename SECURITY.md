@@ -57,7 +57,7 @@ Optional external integrations should use the minimum required read-only scope w
 
 ## Evidence export
 
-`export-run-bundle.py` creates deterministic source-free evidence archives. The exporter rejects detected secrets and unsafe archive members, while `verify-export-bundle.py` independently checks hashes and archive structure.
+`export-run-bundle.py` creates deterministic archives of allowed evidence files, excluding separate story source/binary files. It rejects detected secret patterns and unsafe archive members, while `verify-export-bundle.py` independently checks hashes and archive structure. Allowed evidence text can still contain source excerpts or undetected sensitive information; review content before sharing. Hashes establish byte integrity, not truth or sender identity.
 
 These controls reduce accidental disclosure but are not a substitute for an organisational secret-scanning or data-loss-prevention policy.
 
