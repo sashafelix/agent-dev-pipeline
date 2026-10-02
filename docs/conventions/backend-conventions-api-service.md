@@ -20,7 +20,7 @@ Applies to: relevant stage agents through the matching `docs/skills/` helpers. H
 - Wrapper DTOs for responses combining metadata and data lists.
 
 ### Path Variable Naming
-- Use camelCase for path variables: `/outlet/{id}/{buno}`.
+- Use camelCase for path variables: `/warehouse/{id}/{warehouseNumber}`.
 - Match parameter names to path variable names.
 
 ### Input Sanitization
@@ -31,9 +31,9 @@ log.info("Operation: {}", LogSanitizer.getSanitizedStringForLogging(safeOperatio
 
 ### Structured Logging Keys
 - Use consistent prefixes for log messages:
-  - `RPA-API-REQUEST-*`: API request logging
-  - `RPA-ERROR-*`: Error conditions
-  - `RPA-TNS-GO-*`: External integration logging
+  - `APP-API-REQUEST-*`: API request logging
+  - `APP-ERROR-*`: Error conditions
+  - `APP-INTEGRATION-*`: External integration logging
 
 ## Services
 

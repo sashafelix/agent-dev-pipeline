@@ -39,12 +39,12 @@ public class DailyImportService {
      */
     @Scheduled(cron = "0 0 2 * * *", zone = "Europe/Amsterdam")
     public void runDailyImport() {
-        log.info("RPA-SCHEDULER: Starting daily import");
+        log.info("APP-SCHEDULER: Starting daily import");
         try {
             importService.runImport();
-            log.info("RPA-SCHEDULER: Daily import completed successfully");
+            log.info("APP-SCHEDULER: Daily import completed successfully");
         } catch (Exception e) {
-            log.error("RPA-SCHEDULER: Daily import failed: {}", e.getMessage(), e);
+            log.error("APP-SCHEDULER: Daily import failed: {}", e.getMessage(), e);
         }
     }
 }
@@ -91,7 +91,7 @@ public void runDailyImport() { ... }
 
 ## Error Handling
 - Always wrap scheduled logic in try/catch.
-- Log errors with structured prefix (e.g., `RPA-SCHEDULER:`).
+- Log errors with structured prefix (e.g., `APP-SCHEDULER:`).
 - Define and test the scheduler’s error handling and recurrence behaviour. Do not assume every thrown exception stops every Spring scheduler; behaviour depends on the task and error handler.
 
 ## History / Audit Tracking

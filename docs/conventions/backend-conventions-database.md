@@ -25,23 +25,23 @@ create sequence if not exists {entity}_seq start 1 increment 1 minValue 1;
 
 | Element | Pattern | Example |
 |---------|---------|---------|
-| Schema | lowercase | `hst`, `ai_pipeline` |
-| Table | snake_case | `outlet`, `legal_entity` |
-| Column | snake_case | `outlet_number`, `date_created` |
+| Schema | lowercase | `inventory`, `ai_pipeline` |
+| Table | snake_case | `warehouse`, `organization` |
+| Column | snake_case | `warehouse_number`, `date_created` |
 | Primary Key | `ID` or `id` | `ID bigserial primary key` |
-| Sequence | `{entity}_seq` | `dealer_seq`, `history_seq` |
-| Foreign Key | `fk_{table}_{referenced}` | `fk_dealer_legal_entity` |
-| Unique Index | `uk_{column}` | `uk_outlet_number` |
-| View | descriptive_name | `outlet_overview`, `retail_partners_view` |
+| Sequence | `{entity}_seq` | `warehouse_seq`, `history_seq` |
+| Foreign Key | `fk_{table}_{referenced}` | `fk_warehouse_organization` |
+| Unique Index | `uk_{column}` | `uk_warehouse_number` |
+| View | descriptive_name | `warehouse_overview`, `inventory_summary_view` |
 
 ## Table Creation Pattern
 ```sql
-CREATE TABLE ai_pipeline.outlet (
+CREATE TABLE ai_pipeline.warehouse (
     ID                  bigserial primary key,
-    OUTLET_NUMBER       VARCHAR(255) NOT NULL,
+    WAREHOUSE_NUMBER       VARCHAR(255) NOT NULL,
     NAME                VARCHAR(255) NOT NULL,
-    LEGAL_ENTITY_FK     bigint constraint fk_outlet_legal_entity 
-                        references ai_pipeline.legal_entity,
+    ORGANIZATION_FK     bigint constraint fk_warehouse_organization
+                        references ai_pipeline.organization,
     date_created        timestamp DEFAULT now(),
     user_created        character varying(50),
     date_changed        timestamp DEFAULT now(),

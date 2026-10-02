@@ -170,9 +170,9 @@ For XML/JAXB (when needed):
 ```java
 @XmlType
 @XmlEnum(String.class)
-public enum PortfolioCode {
-    @XmlEnumValue("B1") P_B1("B1");
-    // ...
+public enum ShipmentCategory {
+    @XmlEnumValue("STANDARD") STANDARD,
+    @XmlEnumValue("EXPRESS") EXPRESS
 }
 ```
 
